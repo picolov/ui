@@ -1,0 +1,69 @@
+// core overrides
+$navbar-brand-width:                  300px !default;
+$navbar-height:                       70px !default;
+$navbar-bg:                           #eee !default;
+$navbar-brand-bg:                     #eee !default;
+$navbar-brand-logo-size:              110px auto !default;
+$navbar-brand-minimized-logo-size:    40px !default;
+$navbar-color:                        #bbbbbb !default;
+$navbar-hover-color:                  #757575 !default;
+$navbar-active-color:                 #ffc928 !default;
+$navbar-disabled-color:               #fafafa !default;
+$navbar-nav-font-size:                1.25rem !default;
+$navbar-nav-badge-font-size:          0.6rem !default;
+
+$sidebar-width:                       300px !default;
+$sidebar-color:                       #757575 !default;
+$sidebar-bg:                          #ffffff !default;
+$sidebar-borders:                     (
+    right: (
+      size:                             1px,
+      style:                            solid,
+      color:                            #c2cfd6
+    )
+) !default;
+
+$sidebar-header-border:               (
+    bottom: (
+      size:                             1px,
+      style:                            solid,
+      color:                            #c2cfd6
+    )
+) !default;
+$sidebar-header-color:                #757575 !default;
+$sidebar-header-bg:                   #ffffff !default;
+$sidebar-header-padding-y:            2rem !default;
+
+$sidebar-nav-color:                   #757575 !default;
+$sidebar-nav-link-color:              #757575 !default;
+$sidebar-nav-link-icon-color:         #757575 !default;
+$sidebar-nav-link-borders:     (
+    left: (
+      size:                             4px,
+      style:                            solid,
+      color:                            #ffffff
+    )
+) !default;
+$sidebar-nav-link-hover-color:        #616161 !default;
+$sidebar-nav-link-hover-icon-color:   #616161 !default;
+$sidebar-nav-link-active-color:       #616161 !default;
+$sidebar-nav-link-active-icon-color:  #616161 !default;
+$sidebar-nav-dropdown-color:          #757575 !default;
+$sidebar-nav-link-hover-bg:           #eeeeee !default;
+$sidebar-nav-link-hover-borders:      (
+    left: (
+      size:                             4px,
+      style:                            solid,
+      color:                            #ffc928
+    )
+) !default;
+$sidebar-nav-link-active-bg:          #eeeeee !default;
+$sidebar-nav-link-active-borders:     (
+    left: (
+      size:                             4px,
+      style:                            solid,
+      color:                            #ffc928
+    )
+) !default;
+$navbar-toggler-color:                #757575;
+$sidebar-nav-link-icon-size:          20px !default;
