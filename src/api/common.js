@@ -1,7 +1,7 @@
 import axios from 'axios'
 // import router from '../router'
 export const HTTP = axios.create({
-  baseURL: 'http://localhost:8080/',
+  baseURL: 'http://45.76.192.53:8090/',
   headers: {
     Authorization: localStorage.getItem('access_token')
   }
