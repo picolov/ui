@@ -16,6 +16,7 @@ const getters = {
 const actions = {
   loadLang (context, { pageLang }) {
     // context.commit(types.RECEIVE_PRODUCTS, { products })
+    pageLang = pageLang.replace(/ /g, '_')
     let loaded = false
     let langList = context.state.langList
     for (let i = 0; i < langList.length; i++) {
