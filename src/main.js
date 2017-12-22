@@ -19,9 +19,11 @@ router.beforeEach((to, from, next) => {
     // store.dispatch('getInfo')
   }
   if (from.path === '/') {
-    store.dispatch('loadLang', {pageLang: 'Main_' + Vue.i18n.locale()})
+    store.dispatch('loadLang', {pageLang: 'main_' + Vue.i18n.locale()})
+  } else {
+    let pagePath = to.path.substring(to.path.lastIndexOf('/') + 1)
+    store.dispatch('loadLang', {pageLang: pagePath + '_' + Vue.i18n.locale()})
   }
-  store.dispatch('loadLang', {pageLang: to.name + '_' + Vue.i18n.locale()})
   next()
 })
 
