@@ -85,7 +85,8 @@ export default new Router({
           path: 'accountManagement',
           meta: {label: 'menu.accountManagement'},
           name: 'Account Management',
-          component: () => import('@/views/AccountManagement')
+          component: () => import('@/views/AccountManagement'),
+          props: (route) => ({ action: route.query.action })
         },
         {
           path: 'businessProfile',

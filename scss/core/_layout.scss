@@ -53,7 +53,7 @@ app-root {
 .header-fixed {
   .app-header {
     position: fixed;
-    z-index: $zindex-sticky;
+    z-index: $zindex-sticky - 1;
     width: 100%;
   }
   .app-body {

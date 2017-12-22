@@ -4,8 +4,8 @@ import * as types from '../mutation-types'
 // initial state
 const state = {
   user: null,
-  logged: false,
-  mode: 'client',
+  logged: localStorage.getItem('is_logged'),
+  mode: 'ROLE_UNVERIFIED',
   menus: []
 }
 
@@ -102,14 +102,17 @@ const mutations = {
   },
 
   [types.USER_LOGOUT] (state) {
+    localStorage.setItem('is_logged', false)
     state.logged = false
   },
 
   [types.LOGIN_SUCCESS] (state) {
+    localStorage.setItem('is_logged', true)
     state.logged = true
   },
 
   [types.LOGIN_FAILED] (state) {
+    localStorage.setItem('is_logged', false)
     state.logged = false
   },
 

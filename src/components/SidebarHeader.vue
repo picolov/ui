@@ -4,7 +4,16 @@
     <div>
       <strong>{{user ? (user.firstName && user.lastName ? user.firstName + ' ' + user.lastName : user.login) : ''}}</strong>
     </div> 
-    <b-button @click="switchMode()">{{mode === 'ROLE_CLIENT'?'Client':mode === 'ROLE_VENDOR'?'Vendor':mode === 'ROLE_ADMIN'?'Admin':'Unverified'}} &nbsp;<i class="fa fa-refresh"></i></b-button>
+    <div v-if="mode === 'ROLE_UNVERIFIED'">
+      <b-btn v-b-modal.unverifiedModal>Unverified <i class="fa fa-info-circle"></i></b-btn>
+      <!-- Modal Component -->
+      <b-modal id="unverifiedModal" title="Account not verified!" ok-title="Fill Profile" centered @ok="goToProfile">
+        <p>Hello from modal!</p>
+      </b-modal>
+    </div>
+    <div v-if="mode !== 'ROLE_UNVERIFIED'">
+      <b-btn @click="switchMode()">{{mode === 'ROLE_CLIENT'?'Client':mode === 'ROLE_VENDOR'?'Vendor':mode === 'ROLE_ADMIN'?'Admin':'Unverified'}} &nbsp;<i class="fa fa-refresh"></i></b-btn>
+    </div>
   </div>
 </template>
 <script>
@@ -20,7 +29,10 @@ export default {
   methods: {
     ...mapMutations({
       switchMode: SWITCH_MODE
-    })
+    }),
+    goToProfile: function () {
+      this.$router.push({ path: 'businessProfile' })
+    }
   }
 }
 </script>

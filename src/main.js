@@ -16,7 +16,7 @@ Vue.i18n.set('id')
 router.beforeEach((to, from, next) => {
   if (!store.state.user.logged) {
     console.log('user not logged')
-    store.dispatch('getInfo')
+    // store.dispatch('getInfo')
   }
   if (from.path === '/') {
     store.dispatch('loadLang', {pageLang: 'Main_' + Vue.i18n.locale()})

@@ -13,6 +13,7 @@ HTTP.interceptors.response.use(response => {
   if (error.response.status === 401) {
     console.log('error 401')
     // router.push('project')
+    localStorage.setItem('is_logged', false)
     window.location = '/sign-in.html'
   }
   return error
