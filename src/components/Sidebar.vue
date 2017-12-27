@@ -21,13 +21,13 @@
                     <!-- Second level dropdown -->
                     <SidebarNavDropdown :name="$t(childL1.name)" :url="childL1.url" :icon="childL1.icon">
                       <li class="nav-item" v-for="(childL2, index) in childL1.children">
-                        <SidebarNavLink :name="$t(childL2.name)" :url="childL2.url" :icon="childL2.icon" :badge="childL2.badge" :variant="item.variant"/>
+                        <SidebarNavLink :name="$t(childL2.name)" :url="childL2.url" :activeWhenUrl="childL2.activeWhenUrl" :icon="childL2.icon" :badge="childL2.badge" :variant="item.variant"/>
                       </li>
                     </SidebarNavDropdown>
                   </template>
                   <template v-else>
                     <SidebarNavItem :classes="item.class">
-                      <SidebarNavLink :name="$t(childL1.name)" :url="childL1.url" :icon="childL1.icon" :badge="childL1.badge" :variant="item.variant"/>
+                      <SidebarNavLink :name="$t(childL1.name)" :url="childL1.url" :activeWhenUrl="childL1.activeWhenUrl" :icon="childL1.icon" :badge="childL1.badge" :variant="item.variant"/>
                     </SidebarNavItem>
                   </template>
                 </template>
@@ -35,7 +35,7 @@
             </template>
             <template v-else>
               <SidebarNavItem :classes="item.class">
-                <SidebarNavLink :name="$t(item.name)" :url="item.url" :icon="item.icon" :badge="item.badge" :variant="item.variant"/>
+                <SidebarNavLink :name="$t(item.name)" :url="item.url" :activeWhenUrl="item.activeWhenUrl" :icon="item.icon" :badge="item.badge" :variant="item.variant"/>
               </SidebarNavItem>
             </template>
           </template>

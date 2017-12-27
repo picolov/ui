@@ -4,7 +4,7 @@
     <div class="app-body">
       <Sidebar :navItems="filteredMenus"/>
       <main class="main">
-        <breadcrumb :list="list"/>
+        <breadcrumb :list="list" :name="name"/>
         <div class="container-fluid">
           <router-view></router-view>
         </div>
@@ -14,8 +14,7 @@
 </template>
 
 <script>
-import nav from '../_nav'
-import { mapGetters } from 'vuex'
+import { mapState, mapGetters } from 'vuex'
 import { Header as AppHeader, Sidebar, Breadcrumb } from '../components/'
 
 export default {
@@ -27,7 +26,6 @@ export default {
   },
   data () {
     return {
-      nav: nav.items
     }
   },
   computed: {
@@ -37,6 +35,7 @@ export default {
     list () {
       return this.$route.matched
     },
+    ...mapState({ name: state => state.app.currPage }),
     ...mapGetters(['filteredMenus'])
   }
 }

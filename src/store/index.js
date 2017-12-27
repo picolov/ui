@@ -2,10 +2,9 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import * as actions from './actions'
 import * as getters from './getters'
-import cart from './modules/cart'
-import products from './modules/products'
 import user from './modules/user'
 import lang from './modules/lang'
+import app from './modules/app'
 
 Vue.use(Vuex)
 
@@ -15,10 +14,9 @@ export default new Vuex.Store({
   actions,
   getters,
   modules: {
-    cart,
     lang,
-    products,
-    user
+    user,
+    app
   },
   strict: debug,
   plugins: []

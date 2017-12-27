@@ -21,7 +21,15 @@ HTTP.interceptors.response.use(response => {
 export default {
   get (url, cb, errorCb) {
     HTTP.get(url, {
-      headers: {'Authorization': localStorage.getItem('access_token')}
+    }).then((response) => {
+      cb(response)
+    }).catch((err) => {
+      errorCb(err.response)
+    })
+  },
+
+  delete (url, cb, errorCb) {
+    HTTP.delete(url, {
     }).then((response) => {
       cb(response)
     }).catch((err) => {
@@ -31,6 +39,14 @@ export default {
 
   post (url, param, cb, errorCb) {
     HTTP.post(url, param).then((response) => {
+      cb(response)
+    }).catch((err) => {
+      errorCb(err)
+    })
+  },
+
+  put (url, param, cb, errorCb) {
+    HTTP.put(url, param).then((response) => {
       cb(response)
     }).catch((err) => {
       errorCb(err)

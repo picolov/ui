@@ -36,17 +36,25 @@
       variant: {
         type: String,
         default: ''
+      },
+      activeWhenUrl: {
+        type: String,
+        default: '~'
       }
     },
     computed: {
       classList () {
         return [
           'nav-link',
-          this.linkVariant
+          this.linkVariant,
+          this.checkActiveUrl
         ]
       },
       linkVariant () {
         return this.variant ? `nav-link-${this.variant}` : ''
+      },
+      checkActiveUrl () {
+        return this.$route.path.indexOf(this.activeWhenUrl) > -1 ? 'open active' : ''
       },
       isExternalLink () {
         if (this.url.substring(0, 4) === 'http') {

@@ -30,8 +30,8 @@ const actions = {
         Vue.i18n.add(Vue.i18n.locale(), msgs.default)
         context.commit(types.LOAD_LANG, { pageLang })
         return setI18nLanguage(Vue.i18n.locale())
-      }).catch(error => {
-        console.log('error loading page language: ' + pageLang + '\nerror: ' + error)
+      }).catch(() => {
+        console.log('error loading page language: ' + pageLang)
       })
     } else {
     }

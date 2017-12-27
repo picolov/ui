@@ -6,7 +6,8 @@ const state = {
   user: null,
   logged: false,
   mode: 'client',
-  menus: []
+  menus: [],
+  authMenus: {}
 }
 
 // getters
@@ -14,14 +15,10 @@ const getters = {
   mode: state => state.mode,
   logged: state => state.logged,
   menus: state => state.menus,
+  authMenus: state => state.authMenus,
   filteredMenus: state => {
-    let startWith
-    if (state.mode === 'ROLE_CLIENT') startWith = 'client'
-    else if (state.mode === 'ROLE_VENDOR') startWith = 'vendor'
-    else if (state.mode === 'ROLE_ADMIN') startWith = 'admin'
-    else startWith = 'unverified'
-    return state.menus.filter(function (menu) {
-      return menu.id.startsWith(startWith)
+    return state.menus.filter((menu) => {
+      return state.authMenus ? state.authMenus[state.mode].includes(menu.id) : false
     })
   }
 }
@@ -34,7 +31,7 @@ const actions = {
       'uaa/api/account',
       (response) => {
         commit(types.SET_USER, response.data)
-        commit(types.SET_MENU, response.data.menus)
+        commit(types.SET_MENU, {menus: response.data.menus, authMenus: response.data.authMenus})
         commit(types.LOGIN_SUCCESS)
       },
       () => commit(types.LOGIN_FAILED)
@@ -95,10 +92,11 @@ const mutations = {
     state.mode = user.authorities[0]
   },
 
-  [types.SET_MENU] (state, menus) {
+  [types.SET_MENU] (state, {menus, authMenus}) {
     var resultMenus = []
     attachChild(resultMenus, menus)
     state.menus = resultMenus
+    state.authMenus = authMenus
   },
 
   [types.USER_LOGOUT] (state) {

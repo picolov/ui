@@ -1,7 +1,7 @@
 <template>
   <ol class="breadcrumb">
     <li class="breadcrumb-item" v-for="(item, index) in list">
-      <span class="active" v-if="isLast(index)">{{ $t(showName(item)) }}</span>
+      <span class="active" v-if="isLast(index)">{{ $t(showPageName(item)) }}</span>
       <router-link :to="item" v-else>{{ $t(showName(item)) }}</router-link>
     </li>
   </ol>
@@ -14,6 +14,11 @@ export default {
       type: Array,
       required: true,
       default: () => []
+    },
+    name: {
+      type: String,
+      required: true,
+      default: () => ''
     }
   },
   methods: {
@@ -26,6 +31,16 @@ export default {
       }
       if (item.name) {
         item = item.name
+      }
+      return item
+    },
+    showPageName (item) {
+      if (item.meta && item.meta.label) {
+        item = item.meta.label
+      } else if (item.name) {
+        item = item.name
+      } else if (this.name) {
+        item = this.name
       }
       return item
     }

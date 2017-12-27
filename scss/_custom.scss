@@ -1,1 +1,17 @@
 // Here you can add other styles
+.table .thead-dark th {
+    color: #000000;
+    background-color: #eee;
+    border-color: #c2cfd6;
+}
+
+.dg-btn.dg-btn--cancel {
+    color: #000000;
+    background-color: #ffc928;
+}
+
+.dg-btn.dg-btn--ok {
+    color: #000000;
+    background-color: #fefefe;
+    border-color: #ffc928;
+}
