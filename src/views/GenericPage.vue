@@ -26,6 +26,18 @@
         <span v-if="component.type === 'dropdown' && component.source"  :class="{'float-right':component.h_align==='right'}">
           <b-form-select :id="component.id" :value="dropdownValue(data[component.model])" @input="dropdownInput(component, $event)" :options="options[component.source.model]"></b-form-select>
         </span>
+        <span v-if="component.type === 'radiobutton' && component.data"  :class="{'float-right':component.h_align==='right'}">
+          <b-form-radio-group :id="component.id" v-model="data[component.model]" :options="component.data"/>
+        </span>
+        <span v-if="component.type === 'radiobutton' && component.source"  :class="{'float-right':component.h_align==='right'}">
+          <b-form-radio-group :id="component.id" :value="dropdownValue(data[component.model])" @input="dropdownInput(component, $event)" :options="options[component.source.model]"/>      
+        </span>
+        <span v-if="component.type === 'checkbox' && component.data"  :class="{'float-right':component.h_align==='right'}">
+          <b-form-checkbox-group :id="component.id" v-model="data[component.model]" :options="component.data"/>
+        </span>
+        <span v-if="component.type === 'checkbox' && component.source"  :class="{'float-right':component.h_align==='right'}">
+          <b-form-checkbox-group :id="component.id" :checked="checkboxValue(data[component.model])" @input="checkboxInput(component, $event)" :options="options[component.source.model]"/>      
+        </span>
         <span v-if="component.type === 'table' && fields[component.id] != null">
           <b-table :ref="component.id"
             bordered
@@ -138,7 +150,7 @@ export default {
             let colComponentList = this.rowComponentList[row]
             for (let col = 0; col < colComponentList.length; col++) {
               let component = colComponentList[col]
-              if (component.type === 'dropdown' && component.source) {
+              if ((component.type === 'dropdown' || component.type === 'radiobutton' || component.type === 'checkbox') && component.source) {
                 api.get('generic/class/' + component.source.model,
                   (response) => {
                     let optionList = []
@@ -163,7 +175,61 @@ export default {
                   let field = component.fields[i]
                   // let columnMap = {key: field.key, label: field.label, sortable: field.sortable, class: field.class}
                   if (field.type === 'date') {
-                    field.formatter = 'tableCellAsDate'
+                    field.formatter = (value, key, item) => {
+                      let format = 'YYYY-MM-DD'
+                      if (field.format) format = field.format
+                      let utcTime = moment.utc(value, 'x')
+                      // momentjs is mutable, doing moment.utc(value, 'x').local() will change all
+                      let localTime = moment(utcTime).local()
+                      return localTime.format(format)
+                    }
+                  } else if (field.type === 'stringlist') {
+                    if (field.source) {
+                      api.get('generic/class/' + field.source.model,
+                        (response) => {
+                          let optionList = []
+                          for (let i = 0; i < response.data.length; i++) {
+                            let option = response.data[i]
+                            option.value = option[field.source.value]
+                            option.text = option[field.source.text]
+                            optionList.push(option)
+                          }
+                          Vue.set(this.options, field.source.model, optionList)
+                        },
+                        () => { }
+                      )
+                    }
+                    field.formatter = (value, key, item) => {
+                      let result = ''
+                      if (field.source && value) {
+                        let option = this.options[field.source.model]
+                        let optionMap = {}
+                        for (let j = 0; j < option.length; j++) {
+                          optionMap[option[j].value] = option[j]
+                        }
+                        for (let k = 0; k < value.length; k++) {
+                          if (result === '') {
+                            result += optionMap[value[k]].text
+                          } else {
+                            result += ', ' + optionMap[value[k]].text
+                          }
+                        }
+                      } else if (field.data && value) {
+                        let option = field.data
+                        let optionMap = {}
+                        for (let j = 0; j < option.length; j++) {
+                          optionMap[option[j].value] = option[j]
+                        }
+                        for (let k = 0; k < value.length; k++) {
+                          if (result === '') {
+                            result += optionMap[value[k]].text
+                          } else {
+                            result += ', ' + optionMap[value[k]].text
+                          }
+                        }
+                      }
+                      return result
+                    }
                   }
                   this.fields[component.id].splice(this.fields[component.id].length, 1, field)
                 }
@@ -337,24 +403,31 @@ export default {
         for (let i = 0; i < option.length; i++) {
           if (option[i].value === value) {
             this.data[component.model] = option[i]
+            console.log(this.data[component.model])
             break
           }
         }
       }
     },
+    checkboxValue (value) {
+      // console.log(value)
+      return value
+    },
+    checkboxInput (component, value) {
+      if (value) this.data[component.model] = value
+      // console.log('input:' + this.data[component.model])
+    },
     labelValue (component) {
       let result = component.text ? component.text : (component.model ? getObjectFromString(this.data, component.model) : '')
       return result
     },
-    tableCellAsDate (value, key, item) {
-      let format = 'YYYY-MM-DD'
-      let utcTime = moment.utc(value, 'x')
-      // momentjs is mutable, doing moment.utc(value, 'x').local() will change all
-      let localTime = moment(utcTime).local()
-      return localTime.format(format)
-    },
     getObjectFromString (key) {
-      return getObjectFromString(this.data, key)
+      let result = getObjectFromString(this.data, key)
+      if (result instanceof Array) {
+        return result.join(', ')
+      } else {
+        return result
+      }
     }
   }
 }
