@@ -14,6 +14,12 @@
         <span v-if="component.type === 'numberfield'"  :class="{'float-right':component.h_align==='right'}">
           <b-form-input :id="component.id" type="number" v-model="data[component.model]"></b-form-input>
         </span>
+        <span v-if="component.type === 'passwordfield'"  :class="{'float-right':component.h_align==='right'}">
+          <b-form-input :id="component.id" type="password" v-model="data[component.model]"></b-form-input>
+        </span>
+        <span v-if="component.type === 'emailfield'"  :class="{'float-right':component.h_align==='right'}">
+          <b-form-input :id="component.id" type="email" v-model="data[component.model]"></b-form-input>
+        </span>
         <span v-if="component.type === 'datepicker'"  :class="{'float-right':component.h_align==='right'}">
           <date-picker :id="component.id" format="yyyy-MM-dd" v-model="data[component.model]" lang="en" width="100%" class="full-width"/>
         </span>
