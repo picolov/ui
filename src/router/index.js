@@ -11,7 +11,7 @@ export default new Router({
     {
       path: '/',
       redirect: '/page/dashboard',
-      meta: {label: 'menu.home'},
+      meta: {label: 'menu_home'},
       name: 'Home',
       component: () => import('@/containers/Full'),
       children: [

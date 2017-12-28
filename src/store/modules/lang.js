@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import axios from 'axios'
 import * as types from '../mutation-types'
+import api from '../../api/common'
 
 // initial state
 const state = {
@@ -15,7 +16,6 @@ const getters = {
 // actions
 const actions = {
   loadLang (context, { pageLang }) {
-    // context.commit(types.RECEIVE_PRODUCTS, { products })
     pageLang = pageLang.replace(/ /g, '_')
     let loaded = false
     let langList = context.state.langList
@@ -26,13 +26,16 @@ const actions = {
       }
     }
     if (!loaded) {
-      return import(/* webpackChunkName: "lang-[request]" */ `@/lang/${pageLang}`).then(msgs => {
-        Vue.i18n.add(Vue.i18n.locale(), msgs.default)
-        context.commit(types.LOAD_LANG, { pageLang })
-        return setI18nLanguage(Vue.i18n.locale())
-      }).catch(() => {
-        console.log('error loading page language: ' + pageLang)
-      })
+      api.get('generic/language/' + pageLang,
+        (response) => {
+          if (response.data.content) {
+            Vue.i18n.add(Vue.i18n.locale(), response.data.content)
+            context.commit(types.LOAD_LANG, { pageLang })
+            return setI18nLanguage(Vue.i18n.locale())
+          }
+        },
+        () => { }
+      )
     } else {
     }
   }

@@ -25,8 +25,6 @@ router.beforeEach((to, from, next) => {
   if (from.path === '/') {
     store.dispatch('loadLang', {pageLang: 'main_' + Vue.i18n.locale()})
   }
-  let pagePath = to.path.substring(to.path.lastIndexOf('/') + 1)
-  store.dispatch('loadLang', {pageLang: pagePath + '_' + Vue.i18n.locale()})
   next()
 })
 

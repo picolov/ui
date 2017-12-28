@@ -134,14 +134,15 @@ export default {
       this.currentPage = {}
       this.perPage = {}
       this.totalRows = {}
-
+      // load language
+      this.$store.dispatch('loadLang', {pageLang: this.$route.params.page + '_' + Vue.i18n.locale()})
       // load layout
       api.get(
         'generic/flow/path/' + this.$route.params.page,
         (response) => {
           let page = response.data
           this.id = page.id
-          this.$store.commit(SET_PAGE, page.title)
+          if (page.title) this.$store.commit(SET_PAGE, page.title)
           // get init action
           if (page.init) {
             for (let i = 0; i < page.init.length; i++) {
@@ -207,7 +208,7 @@ export default {
                     }
                     field.formatter = (value, key, item) => {
                       let result = ''
-                      if (field.source && value) {
+                      if (field.source && value && this.options[field.source.model]) {
                         let option = this.options[field.source.model]
                         let optionMap = {}
                         for (let j = 0; j < option.length; j++) {
