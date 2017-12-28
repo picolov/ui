@@ -3,48 +3,48 @@
     <div class="row py-1" v-for="(colComponentList, index) in rowComponentList" :key="index">
       <div v-for="(component, index) in colComponentList" :key="index" :class="['col-' + component.width]">
         <span v-if="component.type === 'label' && component.text && !component.model" :class="{'float-right':component.h_align==='right'}">
-          <label :id="component.id">{{component.text | translate}}</label>
+          <label :id="component.id">{{component.text | translate}} <small v-if="component.mandatory" class="text-danger">*</small></label>
         </span>
-        <span v-if="component.type === 'label' && !component.text && component.model" :class="{'float-right':component.h_align==='right'}">
+        <span v-else-if="component.type === 'label' && !component.text && component.model" :class="{'float-right':component.h_align==='right'}">
           <label :id="component.id">{{getObjectFromString(component.model)}}</label>
         </span>
-        <span v-if="component.type === 'textfield'"  :class="{'float-right':component.h_align==='right'}">
-          <b-form-input :id="component.id" type="text" v-model="data[component.model]"></b-form-input>
+        <span v-else-if="component.type === 'textfield'"  :class="{'float-right':component.h_align==='right'}">
+          <b-form-input :id="component.id" type="text" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label"></b-form-input>
         </span>
-        <span v-if="component.type === 'numberfield'"  :class="{'float-right':component.h_align==='right'}">
-          <b-form-input :id="component.id" type="number" v-model="data[component.model]"></b-form-input>
+        <span v-else-if="component.type === 'numberfield'"  :class="{'float-right':component.h_align==='right'}">
+          <b-form-input :id="component.id" type="number" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label"></b-form-input>
         </span>
-        <span v-if="component.type === 'passwordfield'"  :class="{'float-right':component.h_align==='right'}">
-          <b-form-input :id="component.id" type="password" v-model="data[component.model]"></b-form-input>
+        <span v-else-if="component.type === 'passwordfield'"  :class="{'float-right':component.h_align==='right'}">
+          <b-form-input :id="component.id" type="password" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label"></b-form-input>
         </span>
-        <span v-if="component.type === 'emailfield'"  :class="{'float-right':component.h_align==='right'}">
-          <b-form-input :id="component.id" type="email" v-model="data[component.model]"></b-form-input>
+        <span v-else-if="component.type === 'emailfield'"  :class="{'float-right':component.h_align==='right'}">
+          <b-form-input :id="component.id" type="email" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label"></b-form-input>
         </span>
-        <span v-if="component.type === 'datepicker'"  :class="{'float-right':component.h_align==='right'}">
-          <date-picker :id="component.id" format="yyyy-MM-dd" v-model="data[component.model]" lang="en" width="100%" class="full-width"/>
+        <span v-else-if="component.type === 'datepicker'"  :class="{'float-right':component.h_align==='right'}">
+          <date-picker :id="component.id" format="yyyy-MM-dd" :name="component.model" v-model="data[component.model]" lang="en" width="100%" class="full-width"/>
         </span>
-        <span v-if="component.type === 'daterangepicker'"  :class="{'float-right':component.h_align==='right'}">
-          <date-picker :id="component.id" range="true" format="yyyy-MM-dd" v-model="data[component.model]" lang="en" width="100%" class="full-width"/>
+        <span v-else-if="component.type === 'daterangepicker'"  :class="{'float-right':component.h_align==='right'}">
+          <date-picker :id="component.id" range="true" format="yyyy-MM-dd" :name="component.model" v-model="data[component.model]" lang="en" width="100%" class="full-width"/>
         </span>
-        <span v-if="component.type === 'dropdown' && component.data"  :class="{'float-right':component.h_align==='right'}">
-          <b-form-select :id="component.id" v-model="data[component.model]" :options="component.data"></b-form-select>
+        <span v-else-if="component.type === 'dropdown' && component.data"  :class="{'float-right':component.h_align==='right'}">
+          <b-form-select :id="component.id" :name="component.model" v-model="data[component.model]" :options="component.data"></b-form-select>
         </span>
-        <span v-if="component.type === 'dropdown' && component.source"  :class="{'float-right':component.h_align==='right'}">
-          <b-form-select :id="component.id" :value="dropdownValue(data[component.model])" @input="dropdownInput(component, $event)" :options="options[component.source.model]"></b-form-select>
+        <span v-else-if="component.type === 'dropdown' && component.source"  :class="{'float-right':component.h_align==='right'}">
+          <b-form-select :id="component.id" :name="component.model" :value="dropdownValue(data[component.model])" @input="dropdownInput(component, $event)" :options="options[component.source.model]"></b-form-select>
         </span>
-        <span v-if="component.type === 'radiobutton' && component.data"  :class="{'float-right':component.h_align==='right'}">
-          <b-form-radio-group :id="component.id" v-model="data[component.model]" :options="component.data"/>
+        <span v-else-if="component.type === 'radiobutton' && component.data"  :class="{'float-right':component.h_align==='right'}">
+          <b-form-radio-group :id="component.id" :name="component.model" v-model="data[component.model]" :options="component.data"/>
         </span>
-        <span v-if="component.type === 'radiobutton' && component.source"  :class="{'float-right':component.h_align==='right'}">
-          <b-form-radio-group :id="component.id" :value="dropdownValue(data[component.model])" @input="dropdownInput(component, $event)" :options="options[component.source.model]"/>      
+        <span v-else-if="component.type === 'radiobutton' && component.source"  :class="{'float-right':component.h_align==='right'}">
+          <b-form-radio-group :id="component.id" :name="component.model" :value="dropdownValue(data[component.model])" @input="dropdownInput(component, $event)" :options="options[component.source.model]"/>      
         </span>
-        <span v-if="component.type === 'checkbox' && component.data"  :class="{'float-right':component.h_align==='right'}">
-          <b-form-checkbox-group :id="component.id" v-model="data[component.model]" :options="component.data"/>
+        <span v-else-if="component.type === 'checkbox' && component.data"  :class="{'float-right':component.h_align==='right'}">
+          <b-form-checkbox-group :id="component.id" :name="component.model" v-model="data[component.model]" :options="component.data"/>
         </span>
-        <span v-if="component.type === 'checkbox' && component.source"  :class="{'float-right':component.h_align==='right'}">
-          <b-form-checkbox-group :id="component.id" :checked="checkboxValue(data[component.model])" @input="checkboxInput(component, $event)" :options="options[component.source.model]"/>      
+        <span v-else-if="component.type === 'checkbox' && component.source"  :class="{'float-right':component.h_align==='right'}">
+          <b-form-checkbox-group :id="component.id" :name="component.model" :checked="checkboxValue(data[component.model])" @input="checkboxInput(component, $event)" :options="options[component.source.model]"/>      
         </span>
-        <span v-if="component.type === 'table' && fields[component.id] != null">
+        <span v-else-if="component.type === 'table' && fields[component.id] != null">
           <b-table :ref="component.id"
             bordered
             head-variant="dark"
@@ -68,10 +68,14 @@
           </b-table>
           <b-pagination :total-rows="totalRows[component.id]" :per-page="perPage[component.id]" v-model="currentPage[component.id]" align="center"/>
         </span>
-        <span v-if="component.type === 'button'"  :class="{'float-right':component.h_align==='right'}">
+        <span v-else-if="component.type === 'button'"  :class="{'float-right':component.h_align==='right'}">
           <b-button :id="component.id" @click="btnClick(component)">{{component.text | translate}}</b-button>
         </span>
-        <span v-if="component.type === 'space'"></span>
+        <span v-else-if="component.type === 'space'"></span>
+
+        <b-form-invalid-feedback v-if="component.validation" tag="span" :force-show="errors.has(component.model)">
+          {{ errors.first(component.model) }}
+        </b-form-invalid-feedback>
       </div>
     </div>
   </div>
@@ -318,80 +322,88 @@ export default {
           this.$router.push({ path: url })
           break
         case 'exec':
-          let payload = {}
-          if (action.data) {
-            for (let i = 0; i < action.data.length; i++) {
-              let sentKey = action.data[i]
-              if (action.unprefix) {
-                sentKey = replaceAll(action.unprefix + '_', '', sentKey)
-              }
-              payload[sentKey] = this.data[action.data[i]]
+          this.$validator.validateAll().then((isValid) => {
+            if (!isValid) {
+              // eslint-disable-next-line
+              console.log('Correct them errors!')
+              return
             }
-          } else {
-            payload = this.data
-          }
-          console.log(payload)
-          switch (action.method) {
-            case 'post':
-              api.post(component.action.url, payload,
-                (response) => {
-                  this.$swal('Success', 'Data Successfully Submitted', 'success').then(() => {
-                    if (component.action.redirect) {
-                      this.$router.push({ path: component.action.redirect })
-                    }
-                  })
-                },
-                () => {
-                  console.log('ERROR button click' + component.type + '-' + component.text)
+
+            let payload = {}
+            if (action.data) {
+              for (let i = 0; i < action.data.length; i++) {
+                let sentKey = action.data[i]
+                if (action.unprefix) {
+                  sentKey = replaceAll(action.unprefix + '_', '', sentKey)
                 }
-              )
-              break
-            case 'put':
-              api.put(component.action.url, payload,
-                (response) => {
-                  this.$swal('Success', 'Data Successfully Submitted', 'success').then(() => {
-                    if (component.action.redirect) {
-                      this.$router.push({ path: component.action.redirect })
-                    }
-                  })
-                },
-                () => {
-                  console.log('ERROR button click' + component.type + '-' + component.text)
-                }
-              )
-              break
-            case 'get':
-              api.get(
-                url,
-                (response) => {
-                },
-                () => {
-                }
-              )
-              break
-            case 'delete':
-              this.$swal({
-                title: 'Are you sure?',
-                text: 'Once deleted, you will not be able to recover the data',
-                icon: 'warning',
-                buttons: true,
-                dangerMode: true
-              }).then((isDelete) => {
-                if (isDelete) {
-                  api.delete(
-                    url,
-                    (response) => {
-                      if (component.type === 'table') {
-                        this.$refs[component.id][0].refresh()
+                payload[sentKey] = this.data[action.data[i]]
+              }
+            } else {
+              payload = this.data
+            }
+            console.log(payload)
+            switch (action.method) {
+              case 'post':
+                api.post(component.action.url, payload,
+                  (response) => {
+                    this.$swal('Success', 'Data Successfully Submitted', 'success').then(() => {
+                      if (component.action.redirect) {
+                        this.$router.push({ path: component.action.redirect })
                       }
-                    },
-                    () => {
-                    }
-                  )
-                }
-              })
-              break
-          }
+                    })
+                  },
+                  () => {
+                    console.log('ERROR button click' + component.type + '-' + component.text)
+                  }
+                )
+                break
+              case 'put':
+                api.put(component.action.url, payload,
+                  (response) => {
+                    this.$swal('Success', 'Data Successfully Submitted', 'success').then(() => {
+                      if (component.action.redirect) {
+                        this.$router.push({ path: component.action.redirect })
+                      }
+                    })
+                  },
+                  () => {
+                    console.log('ERROR button click' + component.type + '-' + component.text)
+                  }
+                )
+                break
+              case 'get':
+                api.get(
+                  url,
+                  (response) => {
+                  },
+                  () => {
+                  }
+                )
+                break
+              case 'delete':
+                this.$swal({
+                  title: 'Are you sure?',
+                  text: 'Once deleted, you will not be able to recover the data',
+                  icon: 'warning',
+                  buttons: true,
+                  dangerMode: true
+                }).then((isDelete) => {
+                  if (isDelete) {
+                    api.delete(
+                      url,
+                      (response) => {
+                        if (component.type === 'table') {
+                          this.$refs[component.id][0].refresh()
+                        }
+                      },
+                      () => {
+                      }
+                    )
+                  }
+                })
+                break
+            }
+          })
           break
       }
     },
