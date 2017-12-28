@@ -54,11 +54,11 @@
             :current-page="currentPage[component.id]"
             :per-page="perPage[component.id]">
             <template v-for="field in fields[component.id]" :slot="'HEAD_' + field.key" v-if="field.key != 'actions'" slot-scope="data">
-              <h6 class="text-center" :key="field.key">{{data.label}}</h6>
+              <h6 class="text-center" :key="field.key">{{data.label | translate}}</h6>
               <input type="text" @click.stop=";" v-model="filter[component.id][field.key]" @keyup="filterTyped(component)" :key="field.key" style="width: 100%;"/>
             </template>
             <template slot="HEAD_actions" v-if="component.actions != undefined" slot-scope="data">
-              <h6 class="text-center">{{data.label}}</h6>
+              <h6 class="text-center">{{data.label | translate}}</h6>
             </template>
             <template slot="actions" v-if="component.actions != undefined" slot-scope="row">
               <b-button v-for="(action, index) in component.actions" :key="index" size="sm" @click.stop="rowActionClick(row.item, row.index, component, action)" class="row-action-button">
