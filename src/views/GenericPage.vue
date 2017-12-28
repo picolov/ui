@@ -131,7 +131,7 @@ export default {
 
       // load layout
       api.get(
-        'generic/layout/name/' + this.$route.params.page,
+        'generic/flow/path/' + this.$route.params.page,
         (response) => {
           let page = response.data
           this.id = page.id
