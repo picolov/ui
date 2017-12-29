@@ -9,22 +9,22 @@
           <label :id="component.id">{{getObjectFromString(component.model)}}</label>
         </span>
         <span v-else-if="component.type === 'textfield'"  :class="{'float-right':component.h_align==='right'}">
-          <b-form-input :id="component.id" type="text" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label"></b-form-input>
+          <b-form-input :id="component.id" type="text" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null"></b-form-input>
         </span>
         <span v-else-if="component.type === 'numberfield'"  :class="{'float-right':component.h_align==='right'}">
-          <b-form-input :id="component.id" type="number" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label"></b-form-input>
+          <b-form-input :id="component.id" type="number" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null"></b-form-input>
         </span>
         <span v-else-if="component.type === 'passwordfield'"  :class="{'float-right':component.h_align==='right'}">
-          <b-form-input :id="component.id" type="password" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label"></b-form-input>
+          <b-form-input :id="component.id" type="password" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null"></b-form-input>
         </span>
         <span v-else-if="component.type === 'emailfield'"  :class="{'float-right':component.h_align==='right'}">
-          <b-form-input :id="component.id" type="email" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label"></b-form-input>
+          <b-form-input :id="component.id" type="email" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null"></b-form-input>
         </span>
         <span v-else-if="component.type === 'datepicker'"  :class="{'float-right':component.h_align==='right'}">
-          <date-picker :id="component.id" format="yyyy-MM-dd" :name="component.model" v-model="data[component.model]" lang="en" width="100%" class="full-width"/>
+          <date-picker :id="component.id" format="yyyy-MM-dd" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null" lang="en" width="100%" class="full-width"/>
         </span>
         <span v-else-if="component.type === 'daterangepicker'"  :class="{'float-right':component.h_align==='right'}">
-          <date-picker :id="component.id" range="true" format="yyyy-MM-dd" :name="component.model" v-model="data[component.model]" lang="en" width="100%" class="full-width"/>
+          <date-picker :id="component.id" range="true" format="yyyy-MM-dd" :name="component.model" v-model="data[component.model]" lang="en" width="100%" class="full-width" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null"/>
         </span>
         <span v-else-if="component.type === 'dropdown' && component.data"  :class="{'float-right':component.h_align==='right'}">
           <b-form-select :id="component.id" :name="component.model" v-model="data[component.model]" :options="component.data"></b-form-select>
@@ -322,86 +322,95 @@ export default {
           this.$router.push({ path: url })
           break
         case 'exec':
-          this.$validator.validateAll().then((isValid) => {
-            if (!isValid) {
-              // eslint-disable-next-line
-              console.log('Correct them errors!')
-              return
-            }
-
-            let payload = {}
-            if (action.data) {
-              for (let i = 0; i < action.data.length; i++) {
-                let sentKey = action.data[i]
-                if (action.unprefix) {
-                  sentKey = replaceAll(action.unprefix + '_', '', sentKey)
-                }
-                payload[sentKey] = this.data[action.data[i]]
+          if (!action.use_validate) {
+            this.execForm(action, component, item, index, urlParam)
+          } else {
+            this.$validator.validateAll().then((isValid) => {
+              if (!isValid) {
+                // eslint-disable-next-line
+                console.log('Correct them errors!')
+                return
               }
-            } else {
-              payload = this.data
+
+              this.execForm(action, component, item, index, urlParam)
+            })
+          }
+          break
+      }
+    },
+    execForm (action, component, item, index, urlParam) {
+      let mapInject = {item: item, urlParam: urlParam, index: index, component: component, action: action}
+      let url = stringInject(action.url, mapInject)
+      let payload = {}
+      if (action.data) {
+        for (let i = 0; i < action.data.length; i++) {
+          let sentKey = action.data[i]
+          if (action.unprefix) {
+            sentKey = replaceAll(action.unprefix + '_', '', sentKey)
+          }
+          payload[sentKey] = this.data[action.data[i]]
+        }
+      } else {
+        payload = this.data
+      }
+      console.log(payload)
+      switch (action.method) {
+        case 'post':
+          api.post(component.action.url, payload,
+            (response) => {
+              this.$swal('Success', 'Data Successfully Submitted', 'success').then(() => {
+                if (component.action.redirect) {
+                  this.$router.push({ path: component.action.redirect })
+                }
+              })
+            },
+            () => {
+              console.log('ERROR button click' + component.type + '-' + component.text)
             }
-            console.log(payload)
-            switch (action.method) {
-              case 'post':
-                api.post(component.action.url, payload,
-                  (response) => {
-                    this.$swal('Success', 'Data Successfully Submitted', 'success').then(() => {
-                      if (component.action.redirect) {
-                        this.$router.push({ path: component.action.redirect })
-                      }
-                    })
-                  },
-                  () => {
-                    console.log('ERROR button click' + component.type + '-' + component.text)
+          )
+          break
+        case 'put':
+          api.put(component.action.url, payload,
+            (response) => {
+              this.$swal('Success', 'Data Successfully Submitted', 'success').then(() => {
+                if (component.action.redirect) {
+                  this.$router.push({ path: component.action.redirect })
+                }
+              })
+            },
+            () => {
+              console.log('ERROR button click' + component.type + '-' + component.text)
+            }
+          )
+          break
+        case 'get':
+          api.get(
+            url,
+            (response) => {
+            },
+            () => {
+            }
+          )
+          break
+        case 'delete':
+          this.$swal({
+            title: 'Are you sure?',
+            text: 'Once deleted, you will not be able to recover the data',
+            icon: 'warning',
+            buttons: true,
+            dangerMode: true
+          }).then((isDelete) => {
+            if (isDelete) {
+              api.delete(
+                url,
+                (response) => {
+                  if (component.type === 'table') {
+                    this.$refs[component.id][0].refresh()
                   }
-                )
-                break
-              case 'put':
-                api.put(component.action.url, payload,
-                  (response) => {
-                    this.$swal('Success', 'Data Successfully Submitted', 'success').then(() => {
-                      if (component.action.redirect) {
-                        this.$router.push({ path: component.action.redirect })
-                      }
-                    })
-                  },
-                  () => {
-                    console.log('ERROR button click' + component.type + '-' + component.text)
-                  }
-                )
-                break
-              case 'get':
-                api.get(
-                  url,
-                  (response) => {
-                  },
-                  () => {
-                  }
-                )
-                break
-              case 'delete':
-                this.$swal({
-                  title: 'Are you sure?',
-                  text: 'Once deleted, you will not be able to recover the data',
-                  icon: 'warning',
-                  buttons: true,
-                  dangerMode: true
-                }).then((isDelete) => {
-                  if (isDelete) {
-                    api.delete(
-                      url,
-                      (response) => {
-                        if (component.type === 'table') {
-                          this.$refs[component.id][0].refresh()
-                        }
-                      },
-                      () => {
-                      }
-                    )
-                  }
-                })
-                break
+                },
+                () => {
+                }
+              )
             }
           })
           break

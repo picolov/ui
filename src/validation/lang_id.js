@@ -34,7 +34,7 @@ export default {
   "veeValidate_not_in": "{field} harus berupa nilai yang sah.",
   "veeValidate_numeric": "{field} harus berupa angka.",
   "veeValidate_regex": "Format {field} salah.",
-  "veeValidate_required": "{field} harus diisi ya",
+  "veeValidate_required": "{field} harus diisi.",
   "veeValidate_size": "{field} harus lebih kecil dari {size}.",
   "veeValidate_url": "{field} harus berupa tautan yang benar."
 }
