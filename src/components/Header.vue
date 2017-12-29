@@ -39,6 +39,8 @@
   </header>
 </template>
 <script>
+import generateLang from '../validation/generateLang'
+
 export default {
   name: 'header',
   computed: {
@@ -62,6 +64,7 @@ export default {
     changeLang (lang) {
       this.$i18n.set(lang)
       this.$store.dispatch('loadLang', {pageLang: 'main_' + this.$i18n.locale()})
+      this.$validator.localize(lang, generateLang)
       if (this.$route.params.page) this.$store.dispatch('loadLang', {pageLang: this.$route.params.page + '_' + this.$i18n.locale()})
     },
     sidebarToggle (e) {
