@@ -2,6 +2,7 @@ import Vue from 'vue'
 import axios from 'axios'
 import * as types from '../mutation-types'
 import api from '../../api/common'
+import generateLang from '../../validation/generateLang'
 
 // initial state
 const state = {
@@ -15,7 +16,7 @@ const getters = {
 
 // actions
 const actions = {
-  loadLang (context, { pageLang }) {
+  loadLang (context, { pageLang, instance }) {
     pageLang = pageLang.replace(/ /g, '_')
     let loaded = false
     let langList = context.state.langList
@@ -31,12 +32,14 @@ const actions = {
           if (response.data.content) {
             Vue.i18n.add(Vue.i18n.locale(), response.data.content)
             context.commit(types.LOAD_LANG, { pageLang })
+            if (instance) instance.$validator.localize(instance.$i18n.locale(), generateLang)
             return setI18nLanguage(Vue.i18n.locale())
           }
         },
         () => { }
       )
     } else {
+      if (instance) instance.$validator.localize(instance.$i18n.locale(), generateLang)
     }
   }
 }
