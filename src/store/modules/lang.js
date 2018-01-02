@@ -16,31 +16,57 @@ const getters = {
 
 // actions
 const actions = {
-  loadLang (context, { pageLang, instance }) {
-    pageLang = pageLang.replace(/ /g, '_')
+  loadLang (context, { page, instance }) {
+    let mainLang = 'main_' + Vue.i18n.locale()
+    let mainLoaded = false
+    let pageLang = page.replace(/ /g, '_') + '_' + Vue.i18n.locale()
     let loaded = false
     let langList = context.state.langList
     for (let i = 0; i < langList.length; i++) {
       if (langList[i] === pageLang) {
         loaded = true
-        break
+      } else if (langList[i] === mainLang) {
+        mainLoaded = true
       }
     }
-    if (!loaded) {
-      api.get('generic/language/' + pageLang,
+    let promises = []
+    if (!mainLoaded) {
+      if (instance) instance.$bus.$emit('show-full-loading', { label: 'Fetching Language' })
+      promises.push(api.get('generic/language/' + mainLang,
         (response) => {
           if (response.data.content) {
             Vue.i18n.add(Vue.i18n.locale(), response.data.content)
-            context.commit(types.LOAD_LANG, { pageLang })
+            context.commit(types.LOAD_LANG, { pageLang: mainLang })
             if (instance) instance.$validator.localize(instance.$i18n.locale(), generateLang)
             return setI18nLanguage(Vue.i18n.locale())
           }
         },
         () => { }
-      )
+      ))
     } else {
-      if (instance) instance.$validator.localize(instance.$i18n.locale(), generateLang)
+      if (instance) instance.$validator.localize(instance.$i18n.locale())
     }
+    if (!loaded) {
+      if (instance) instance.$bus.$emit('show-full-loading', { label: 'Fetching Language' })
+      promises.push(api.get('generic/language/' + pageLang,
+        (response) => {
+          if (response.data.content) {
+            Vue.i18n.add(Vue.i18n.locale(), response.data.content)
+            context.commit(types.LOAD_LANG, { pageLang })
+            return setI18nLanguage(Vue.i18n.locale())
+          }
+        },
+        () => { }
+      ))
+    }
+    Promise.all(promises).then(() => {
+      /*
+      setTimeout(() => {
+        if (instance) instance.$bus.$emit('hide-full-loading')
+      }, 2000)
+      */
+      if (instance) instance.$bus.$emit('hide-full-loading')
+    })
   }
 }
 

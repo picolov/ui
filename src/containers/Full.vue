@@ -10,22 +10,25 @@
         </div>
       </main>
     </div>
+    <Loading :eventBus="eventBus" />
   </div>
 </template>
 
 <script>
 import { mapState, mapGetters } from 'vuex'
-import { Header as AppHeader, Sidebar, Breadcrumb } from '../components/'
+import { Header as AppHeader, Sidebar, Breadcrumb, Loading } from '../components/'
 
 export default {
   name: 'full',
   components: {
+    Loading,
     AppHeader,
     Sidebar,
     Breadcrumb
   },
   data () {
     return {
+      eventBus: this.$bus
     }
   },
   computed: {

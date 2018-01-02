@@ -139,7 +139,7 @@ export default {
       this.perPage = {}
       this.totalRows = {}
       // load language
-      this.$store.dispatch('loadLang', {pageLang: this.$route.params.page + '_' + Vue.i18n.locale()})
+      this.$store.dispatch('loadLang', {page: this.$route.params.page, instance: this})
       // load layout
       api.get(
         'generic/flow/path/' + this.$route.params.page,
