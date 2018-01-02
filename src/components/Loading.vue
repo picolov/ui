@@ -102,7 +102,8 @@ export default {
   data () {
     return {
       showing: false,
-      labelPrint: this.label
+      labelPrint: this.label,
+      progress: []
     }
   },
   computed: {
@@ -128,12 +129,27 @@ export default {
     // Register eventBus methods.
     registerBusMethods () {
       this.eventBus.$on(this.eventShow, payload => {
-        if (payload) {
-          if (payload.label) this.labelPrint = payload.label
-        }
+        this.progress.push(payload.key)
+
         this.showMe()
       })
       this.eventBus.$on(this.eventHide, payload => {
+        if (Array.isArray(payload.key)) {
+          payload.key.forEach((value, index) => {
+            if (this.progress.indexOf(value) > -1) {
+              this.progress.pop(value)
+            }
+          })
+        } else {
+          if (this.progress.indexOf(payload.key) > -1) {
+            this.progress.pop(payload.key)
+          }
+        }
+
+        if (this.progress.length > 0) {
+          return
+        }
+
         this.labelPrint = this.label
         this.hideMe()
       })

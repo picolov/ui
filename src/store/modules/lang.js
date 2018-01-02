@@ -31,7 +31,7 @@ const actions = {
     }
     let promises = []
     if (!mainLoaded) {
-      if (instance) instance.$bus.$emit('show-full-loading', { label: 'Fetching Language' })
+      if (instance) instance.$bus.$emit('show-full-loading', { key: 'fetchMainLang' })
       promises.push(api.get('generic/language/' + mainLang,
         (response) => {
           if (response.data.content) {
@@ -47,7 +47,7 @@ const actions = {
       if (instance) instance.$validator.localize(instance.$i18n.locale())
     }
     if (!loaded) {
-      if (instance) instance.$bus.$emit('show-full-loading', { label: 'Fetching Language' })
+      if (instance) instance.$bus.$emit('show-full-loading', { key: 'fetchPageLang' })
       promises.push(api.get('generic/language/' + pageLang,
         (response) => {
           if (response.data.content) {
@@ -65,7 +65,7 @@ const actions = {
         if (instance) instance.$bus.$emit('hide-full-loading')
       }, 2000)
       */
-      if (instance) instance.$bus.$emit('hide-full-loading')
+      if (instance) instance.$bus.$emit('hide-full-loading', {key: ['fetchPageLang', 'fetchMainLang']})
     })
   }
 }
