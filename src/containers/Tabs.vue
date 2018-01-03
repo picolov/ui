@@ -40,24 +40,6 @@ export default {
 </script>
 
 <style lang="css">
-  .table {display: table;}
-
-  .table-cell {
-      display: table-cell;
-  }
-
-  .vertical-align {
-    vertical-align: middle;
-  }
-
-  .row-action-button {
-    margin-right: 5px;
-  }
-
-  .mx-datepicker-popup {
-    left: 0!important;
-  }
-
   .full-width {
     width: 100%;
   }

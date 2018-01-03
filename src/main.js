@@ -5,23 +5,29 @@ import vuexI18n from 'vuex-i18n'
 import BootstrapVue from 'bootstrap-vue'
 import VueSwal from 'vue-swal'
 import DatePicker from 'vue2-datepicker'
+import VueFormWizard from 'vue-form-wizard'
 import App from './App'
 import store from './store'
 import router from './router'
 import { VeeValidate, VeeConfig } from './validation'
 import GenericContainer from './containers/Container'
 import GenericTabs from './containers/Tabs'
+import GenericMultiStep from './containers/MultiStep'
+
+import 'vue-form-wizard/dist/vue-form-wizard.min.css'
 
 Vue.use(vuexI18n.plugin, store)
 Vue.use(BootstrapVue)
 Vue.use(VueSwal)
 Vue.use(DatePicker)
+Vue.use(VueFormWizard)
 
 // set the start locale to use
 Vue.i18n.set('en')
 Vue.use(VeeValidate, VeeConfig)
 Vue.component('generic-container', GenericContainer)
 Vue.component('generic-tabs', GenericTabs)
+Vue.component('generic-multistep', GenericMultiStep)
 
 const EventBus = new Vue()
 

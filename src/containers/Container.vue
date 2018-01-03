@@ -3,20 +3,23 @@
     <div class="row py-1" v-for="(colComponentList, index) in rowComponentList" :key="index">
       <div v-for="(component, index) in colComponentList" :key="index" :class="['col-' + component.width]">
         <template v-if="component.ifCondition ? evaluateString(component.ifCondition, component, data) : true">
-          <span v-if="component.type === 'label' && component.text && !component.model" :class="{'float-right':component.h_align==='right'}">
-            <label :id="component.id">{{component.text | translate}} <small v-if="component.mandatory" class="text-danger">*</small></label>
-          </span>
-          <span v-else-if="component.type === 'label' && !component.text && component.model" :class="{'float-right':component.h_align==='right'}">
-            <label :id="component.id">{{getObjectFromString(component.model)}}</label>
-          </span>
-
-          <span v-else-if="component.type === 'container'"  :class="{'float-right':component.h_align==='right', 'w-100':component.fullwidth !== false}">
+          <!-- Container -->
+          <span v-if="component.type === 'container'"  :class="{'float-right':component.h_align==='right', 'w-100':component.fullwidth !== false}">
             <generic-container :id="component.id" :components="component.content" :view-as="component.viewAs" :data="data" :fullwidth="component.fullwidth"/>
           </span>
           <span v-else-if="component.type === 'tabs'"  :class="{'float-right':component.h_align==='right', 'w-100':component.fullwidth !== false}">
             <generic-tabs :id="component.id" :components="component.content" :data="data" :fullwidth="component.fullwidth"/>
           </span>
-
+          <span v-else-if="component.type === 'multistep'"  :class="{'float-right':component.h_align==='right', 'w-100':component.fullwidth !== false}">
+            <generic-multistep :id="component.id" :components="component.content" :data="data" :back-button-text="component.backButtonText" :next-button-text="component.nextButtonText" :finish-button-text="component.finishButtonText" @finish="btnClick(component.finishAction, component)" :fullwidth="component.fullwidth"/>
+          </span>
+          <!-- Basic Component -->
+          <span v-else-if="component.type === 'label' && component.text && !component.model" :class="{'float-right':component.h_align==='right'}">
+            <label :id="component.id">{{component.text | translate}} <small v-if="component.mandatory" class="text-danger">*</small></label>
+          </span>
+          <span v-else-if="component.type === 'label' && !component.text && component.model" :class="{'float-right':component.h_align==='right'}">
+            <label :id="component.id">{{getObjectFromString(component.model)}}</label>
+          </span>
           <span v-else-if="component.type === 'textfield'"  :class="{'float-right':component.h_align==='right'}">
             <b-form-input :id="component.id" type="text" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null"></b-form-input>
           </span>
@@ -53,6 +56,11 @@
           <span v-else-if="component.type === 'checkbox' && component.source"  :class="{'float-right':component.h_align==='right'}">
             <b-form-checkbox-group :id="component.id" :name="component.model" :checked="checkboxValue(data[component.model])" @input="checkboxInput(component, $event)" :options="options[component.source.model]"/>      
           </span>
+          <span v-else-if="component.type === 'button'"  :class="{'float-right':component.h_align==='right'}">
+            <b-button :id="component.id" @click="btnClick(component.action, component)">{{component.text | translate}}</b-button>
+          </span>
+          <span v-else-if="component.type === 'space'"></span>
+          <!-- Complex Component -->
           <span v-else-if="component.type === 'table' && fields[component.id] != null">
             <b-table :ref="component.id"
               bordered
@@ -77,10 +85,6 @@
             </b-table>
             <b-pagination :total-rows="totalRows[component.id]" :per-page="perPage[component.id]" v-model="currentPage[component.id]" align="center"/>
           </span>
-          <span v-else-if="component.type === 'button'"  :class="{'float-right':component.h_align==='right'}">
-            <b-button :id="component.id" @click="btnClick(component)">{{component.text | translate}}</b-button>
-          </span>
-          <span v-else-if="component.type === 'space'"></span>
 
           <b-form-invalid-feedback v-if="component.validation" tag="span" :force-show="errors.has(component.model)">
             {{ errors.first(component.model) }}
@@ -286,8 +290,8 @@ export default {
     filterTyped (component) {
       this.$refs[component.id][0].refresh()
     },
-    btnClick (component) {
-      this.processAction(component.action, component, null, null, this.$route.query)
+    btnClick (action, component) {
+      this.processAction(action, component, null, null, this.$route.query)
     },
     processAction (action, component, item, index, urlParam) {
       let mapInject = {item: item, urlParam: urlParam, index: index, component: component, action: action}
@@ -439,8 +443,6 @@ export default {
       }
     },
     evaluateString (strStatement, component, data) {
-      console.log('str statement : ' + strStatement)
-      console.log(data._id)
       // eslint-disable-next-line no-eval
       return eval(strStatement)
     }

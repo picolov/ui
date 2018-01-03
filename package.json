@@ -26,6 +26,7 @@
     "vee-validate": "^2.0.0-rc.27",
     "vue": "^2.5.2",
     "vue-chartjs": "^3.0.0",
+    "vue-form-wizard": "^0.8.2",
     "vue-router": "^3.0.1",
     "vue-swal": "0.0.6",
     "vue2-datepicker": "^1.7.0",
