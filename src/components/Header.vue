@@ -61,8 +61,7 @@ export default {
     },
     changeLang (lang) {
       this.$i18n.set(lang)
-      this.$store.dispatch('loadLang', {pageLang: 'main_' + this.$i18n.locale(), instance: this})
-      if (this.$route.params.page) this.$store.dispatch('loadLang', {pageLang: this.$route.params.page + '_' + this.$i18n.locale()})
+      if (this.$route.params.page) this.$store.dispatch('loadLang', {page: this.$route.params.page, instance: this})
     },
     sidebarToggle (e) {
       e.preventDefault()

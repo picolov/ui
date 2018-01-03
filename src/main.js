@@ -23,13 +23,20 @@ Vue.use(VeeValidate, VeeConfig)
 Vue.component('generic-container', GenericContainer)
 Vue.component('generic-tabs', GenericTabs)
 
+const EventBus = new Vue()
+
+Object.defineProperties(Vue.prototype, {
+  $bus: {
+    get: function () {
+      return EventBus
+    }
+  }
+})
+
 router.beforeEach((to, from, next) => {
   if (!store.state.user.logged) {
     console.log('user not logged')
     store.dispatch('getInfo')
-  }
-  if (from.path === '/') {
-    store.dispatch('loadLang', {pageLang: 'main_' + Vue.i18n.locale(), instance: this})
   }
   next()
 })
