@@ -40,13 +40,17 @@ const actions = {
   logout ({ commit, state }) {
     console.log('logout')
     localStorage.clear()
-    api.get(
-      'auth/logout',
+    api.post(
+      'auth/logout', {},
       (response) => {
         commit(types.SET_USER, null)
         commit(types.USER_LOGOUT)
+        window.location = '/sign-in.html'
       },
-      () => commit(types.USER_LOGOUT)
+      () => {
+        commit(types.USER_LOGOUT)
+        window.location = '/sign-in.html'
+      }
     )
   }
 }

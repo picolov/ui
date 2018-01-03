@@ -9,6 +9,8 @@ import App from './App'
 import store from './store'
 import router from './router'
 import { VeeValidate, VeeConfig } from './validation'
+import GenericContainer from './containers/Container'
+import GenericTabs from './containers/Tabs'
 
 Vue.use(vuexI18n.plugin, store)
 Vue.use(BootstrapVue)
@@ -18,6 +20,8 @@ Vue.use(DatePicker)
 // set the start locale to use
 Vue.i18n.set('en')
 Vue.use(VeeValidate, VeeConfig)
+Vue.component('generic-container', GenericContainer)
+Vue.component('generic-tabs', GenericTabs)
 
 router.beforeEach((to, from, next) => {
   if (!store.state.user.logged) {
