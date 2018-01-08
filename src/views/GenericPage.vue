@@ -1,6 +1,6 @@
 <template>
   <div class="animated fadeIn">
-    <generic-container :name="id" :components="componentList" :view-as="viewAs" :data="data"/>
+    <generic-container v-if="componentList !== null" :name="id" :components="componentList" :attr="attr" :data="data"/>
   </div>
 </template>
 
@@ -14,8 +14,10 @@ export default {
   data () {
     return {
       id: '',
-      componentList: [],
-      viewAs: 'div',
+      componentList: null,
+      attr: {
+        viewAs: 'div'
+      },
       data: {}
     }
   },
@@ -27,11 +29,15 @@ export default {
   },
   methods: {
     fetchData () {
+      // this is set to be null so that the generic-container will got re-mounted, if not then if will not see that it need to be re-mounted, because changing props doesn't count
+      this.componentList = null
+      // reset data
+      this.data = {}
       // load language
       this.$store.dispatch('loadLang', {page: this.$route.params.page, instance: this})
       // load layout
       api.get(
-        'generic/flow/path/' + this.$route.params.page,
+        'generic/flow/layout/' + this.$route.params.page,
         (response) => {
           let page = response.data
           this.id = page.id
@@ -44,7 +50,7 @@ export default {
             }
           }
           this.componentList = page.content
-          if (page.viewAs) this.viewAs = page.viewAs
+          this.attr = page
         }, () => {
           console.log('ERROR when loading page ' + this.$route.params.page)
         }

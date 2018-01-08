@@ -1,67 +1,81 @@
 <template>
-  <component :is="viewAs" :class="{'w-100':fullwidth}">
-    <div class="row py-1" v-for="(colComponentList, index) in rowComponentList" :key="index">
-      <div v-for="(component, index) in colComponentList" :key="index" :class="['col-' + component.width]">
-        <template v-if="component.ifCondition ? evaluateString(component.ifCondition, component, data) : true">
+  <component :is="attr.viewAs?attr.viewAs:'div'" :class="{'w-100':fullwidth}">
+    <div class="row py-1" v-for="(colComponentList, indexRow) in rowComponentList" :key="indexRow">
+      <div v-for="(cellComponent, indexCol) in colComponentList" :key="indexCol" :style="cellComponent.style" :class="['cell-component', cellComponent.width?'col-' + cellComponent.width:'col', cellComponent.offset?'offset-' + cellComponent.offset:null]">
+        <template v-for="(component, indexCell) in cellComponent.content" v-if="component.ifCondition ? evaluateString(component.ifCondition, component, data) : true">
           <!-- Container -->
-          <span v-if="component.type === 'container'"  :class="{'float-right':component.h_align==='right', 'w-100':component.fullwidth !== false}">
-            <generic-container :id="component.id" :components="component.content" :view-as="component.viewAs" :data="data" :fullwidth="component.fullwidth"/>
+          <span v-if="component.type === 'container'" :class="{'float-right':component.h_align==='right', 'w-100':component.fullwidth !== false}" :key="indexCell">
+            <generic-container :id="component.id" :components="component.content" :attr="component" :data="data" :fullwidth="component.fullwidth" :style="component.style"/>
           </span>
-          <span v-else-if="component.type === 'tabs'"  :class="{'float-right':component.h_align==='right', 'w-100':component.fullwidth !== false}">
-            <generic-tabs :id="component.id" :components="component.content" :data="data" :fullwidth="component.fullwidth"/>
+          <span v-else-if="component.type === 'tabs'" :class="{'float-right':component.h_align==='right', 'w-100':component.fullwidth !== false}" :key="indexCell">
+            <generic-tabs :id="component.id" :components="component.content" :data="data" :fullwidth="component.fullwidth" :style="component.style"/>
           </span>
-          <span v-else-if="component.type === 'multistep'"  :class="{'float-right':component.h_align==='right', 'w-100':component.fullwidth !== false}">
-            <generic-multistep :id="component.id" :components="component.content" :data="data" :back-button-text="component.backButtonText" :next-button-text="component.nextButtonText" :finish-button-text="component.finishButtonText" @finish="btnClick(component.finishAction, component)" :fullwidth="component.fullwidth"/>
+          <span v-else-if="component.type === 'multistep'" :class="{'float-right':component.h_align==='right', 'w-100':component.fullwidth !== false}" :key="indexCell">
+            <generic-multistep :id="component.id" :components="component.content" :data="data" :back-button-text="component.backButtonText" :next-button-text="component.nextButtonText" :finish-button-text="component.finishButtonText" @finish="btnClick(component.finishAction, component)" :fullwidth="component.fullwidth" :style="component.style"/>
           </span>
           <!-- Basic Component -->
-          <span v-else-if="component.type === 'label' && component.text && !component.model" :class="{'float-right':component.h_align==='right'}">
-            <label :id="component.id">{{component.text | translate}} <small v-if="component.mandatory" class="text-danger">*</small></label>
+          <span v-else-if="component.type === 'label' && component.text && !component.model" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <component :is="component.viewAs?component.viewAs:'label'" :id="component.id" :style="component.style">{{component.text | translate}} <small v-if="component.mandatory" class="text-danger">*</small></component>
           </span>
-          <span v-else-if="component.type === 'label' && !component.text && component.model" :class="{'float-right':component.h_align==='right'}">
-            <label :id="component.id">{{getObjectFromString(component.model)}}</label>
+          <span v-else-if="component.type === 'label' && !component.text && component.model" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <label :id="component.id" :style="component.style">{{getObjectFromString(component.model)}}</label>
           </span>
-          <span v-else-if="component.type === 'textfield'"  :class="{'float-right':component.h_align==='right'}">
-            <b-form-input :id="component.id" type="text" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null"></b-form-input>
+          <span v-else-if="component.type === 'imageb64' && !component.source && component.model" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-img-lazy :id="component.id" :style="component.style" :src="getObjectFromString(component.model)?getObjectFromString(component.model):''" :rounded="component.shape==='circle'?'circle':'0'" :width="component.imgWidth" :height="component.imgHeight" />
           </span>
-          <span v-else-if="component.type === 'numberfield'"  :class="{'float-right':component.h_align==='right'}">
-            <b-form-input :id="component.id" type="number" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null"></b-form-input>
+          <span v-else-if="component.type === 'imageb64' && component.source && !component.model" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-img-lazy :id="component.id" :style="component.style" :src="component.source" :rounded="component.shape==='circle'?'circle':'0'" :width="component.imgWidth" :height="component.imgHeight" />
           </span>
-          <span v-else-if="component.type === 'passwordfield'"  :class="{'float-right':component.h_align==='right'}">
-            <b-form-input :id="component.id" type="password" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null"></b-form-input>
+          <span v-else-if="component.type === 'uploadFile'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <generic-filebase64 
+              :id="component.id" :style="component.style"
+              accept="image/png,image/jpeg"
+              @file="(file) => {}"
+              @load="(dataUri) => { uploadb64(data, component, dataUri) }"
+              :disable-preview = "true"
+              :placeholder="component.text | translate" />
           </span>
-          <span v-else-if="component.type === 'emailfield'"  :class="{'float-right':component.h_align==='right'}">
-            <b-form-input :id="component.id" type="email" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null"></b-form-input>
+          <span v-else-if="component.type === 'textfield'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-form-input :id="component.id" type="text" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null" :style="component.style"/>
           </span>
-          <span v-else-if="component.type === 'datepicker'"  :class="{'float-right':component.h_align==='right'}">
-            <date-picker :id="component.id" format="yyyy-MM-dd" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null" lang="en" width="100%" class="full-width"/>
+          <span v-else-if="component.type === 'numberfield'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-form-input :id="component.id" type="number" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null" :style="component.style"/>
           </span>
-          <span v-else-if="component.type === 'daterangepicker'"  :class="{'float-right':component.h_align==='right'}">
-            <date-picker :id="component.id" range="true" format="yyyy-MM-dd" :name="component.model" v-model="data[component.model]" lang="en" width="100%" class="full-width" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null"/>
+          <span v-else-if="component.type === 'passwordfield'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-form-input :id="component.id" type="password" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null" :style="component.style"/>
           </span>
-          <span v-else-if="component.type === 'dropdown' && component.data"  :class="{'float-right':component.h_align==='right'}">
-            <b-form-select :id="component.id" :name="component.model" v-model="data[component.model]" :options="component.data"></b-form-select>
+          <span v-else-if="component.type === 'emailfield'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-form-input :id="component.id" type="email" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null" :style="component.style"/>
           </span>
-          <span v-else-if="component.type === 'dropdown' && component.source"  :class="{'float-right':component.h_align==='right'}">
-            <b-form-select :id="component.id" :name="component.model" :value="dropdownValue(data[component.model])" @input="dropdownInput(component, $event)" :options="options[component.source.model]"></b-form-select>
+          <span v-else-if="component.type === 'datepicker'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <date-picker :id="component.id" format="yyyy-MM-dd" :name="component.model" v-model="data[component.model]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null" lang="en" width="100%" class="full-width" :style="component.style"/>
           </span>
-          <span v-else-if="component.type === 'radiobutton' && component.data"  :class="{'float-right':component.h_align==='right'}">
-            <b-form-radio-group :id="component.id" :name="component.model" v-model="data[component.model]" :options="component.data"/>
+          <span v-else-if="component.type === 'daterangepicker'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <date-picker :id="component.id" range="true" format="yyyy-MM-dd" :name="component.model" v-model="data[component.model]" lang="en" width="100%" class="full-width" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model) ? false : null" :style="component.style"/>
           </span>
-          <span v-else-if="component.type === 'radiobutton' && component.source"  :class="{'float-right':component.h_align==='right'}">
-            <b-form-radio-group :id="component.id" :name="component.model" :value="dropdownValue(data[component.model])" @input="dropdownInput(component, $event)" :options="options[component.source.model]"/>      
+          <span v-else-if="component.type === 'dropdown' && component.data" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-form-select :id="component.id" :name="component.model" v-model="data[component.model]" :options="component.data" :style="component.style"></b-form-select>
           </span>
-          <span v-else-if="component.type === 'checkbox' && component.data"  :class="{'float-right':component.h_align==='right'}">
-            <b-form-checkbox-group :id="component.id" :name="component.model" v-model="data[component.model]" :options="component.data"/>
+          <span v-else-if="component.type === 'dropdown' && component.source" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-form-select :id="component.id" :name="component.model" :value="dropdownValue(data[component.model])" @input="dropdownInput(component, $event)" :options="options[component.source.model]" :style="component.style"></b-form-select>
           </span>
-          <span v-else-if="component.type === 'checkbox' && component.source"  :class="{'float-right':component.h_align==='right'}">
-            <b-form-checkbox-group :id="component.id" :name="component.model" :checked="checkboxValue(data[component.model])" @input="checkboxInput(component, $event)" :options="options[component.source.model]"/>      
+          <span v-else-if="component.type === 'radiobutton' && component.data" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-form-radio-group :id="component.id" :name="component.model" v-model="data[component.model]" :options="component.data" :style="component.style"/>
           </span>
-          <span v-else-if="component.type === 'button'"  :class="{'float-right':component.h_align==='right'}">
-            <b-button :id="component.id" @click="btnClick(component.action, component)">{{component.text | translate}}</b-button>
+          <span v-else-if="component.type === 'radiobutton' && component.source" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-form-radio-group :id="component.id" :name="component.model" :value="dropdownValue(data[component.model])" @input="dropdownInput(component, $event)" :options="options[component.source.model]" :style="component.style"/>      
           </span>
-          <span v-else-if="component.type === 'space'"></span>
+          <span v-else-if="component.type === 'checkbox' && component.data" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-form-checkbox-group :id="component.id" :name="component.model" v-model="data[component.model]" :options="component.data" :style="component.style"/>
+          </span>
+          <span v-else-if="component.type === 'checkbox' && component.source" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-form-checkbox-group :id="component.id" :name="component.model" :checked="checkboxValue(data[component.model])" @input="checkboxInput(component, $event)" :options="options[component.source.model]" :style="component.style"/>      
+          </span>
+          <span v-else-if="component.type === 'button'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-button :id="component.id" @click="btnClick(component.action, component)" :style="component.style">{{component.text | translate}}</b-button>
+          </span>
           <!-- Complex Component -->
-          <span v-else-if="component.type === 'table' && fields[component.id] != null">
+          <span v-else-if="component.type === 'table' && fields[component.id] != null" :key="indexCell">
             <b-table :ref="component.id"
               bordered
               head-variant="dark"
@@ -69,7 +83,8 @@
               :items="myProvider" 
               :fields="fields[component.id]" 
               :current-page="currentPage[component.id]"
-              :per-page="perPage[component.id]">
+              :per-page="perPage[component.id]"
+              :style="component.style">
               <template v-for="field in fields[component.id]" :slot="'HEAD_' + field.key" v-if="field.key != 'actions'" slot-scope="data">
                 <h6 class="text-center" :key="field.key">{{data.label | translate}}</h6>
                 <input type="text" @click.stop=";" v-model="filter[component.id][field.key]" @keyup="filterTyped(component)" :key="field.key" style="width: 100%;"/>
@@ -85,8 +100,8 @@
             </b-table>
             <b-pagination :total-rows="totalRows[component.id]" :per-page="perPage[component.id]" v-model="currentPage[component.id]" align="center"/>
           </span>
-
-          <b-form-invalid-feedback v-if="component.validation" tag="span" :force-show="errors.has(component.model)">
+          <!-- Validation Addon -->
+          <b-form-invalid-feedback v-if="component.validation" tag="span" :force-show="errors.has(component.model)" :key="indexCell">
             {{ errors.first(component.model) }}
           </b-form-invalid-feedback>
         </template>
@@ -112,10 +127,14 @@ export default {
       required: true,
       default: () => []
     },
-    viewAs: {
-      type: String,
-      required: true,
-      default: () => 'card'
+    attr: {
+      type: Object,
+      required: false,
+      default: () => {
+        return {
+          viewAs: 'card'
+        }
+      }
     },
     data: {
       type: Object,
@@ -132,7 +151,6 @@ export default {
     return {
       id: '',
       options: {},
-      isBusy: {},
       fields: {},
       filter: {},
       currentPage: {},
@@ -143,97 +161,112 @@ export default {
   computed: {
     rowComponentList () {
       let componentList = orderComponentList(this.components)
+      this.id = ''
+      this.options = {}
+      this.fields = {}
+      this.filter = {}
+      this.currentPage = {}
+      this.perPage = {}
+      this.totalRows = {}
       // get all options data
       for (let row = 0; row < componentList.length; row++) {
         let colComponentList = componentList[row]
         for (let col = 0; col < colComponentList.length; col++) {
-          let component = colComponentList[col]
-          if ((component.type === 'dropdown' || component.type === 'radiobutton' || component.type === 'checkbox') && component.source) {
-            api.get('generic/class/' + component.source.model,
-              (response) => {
-                let optionList = []
-                for (let i = 0; i < response.data.length; i++) {
-                  let option = response.data[i]
-                  option.value = option[component.source.value]
-                  option.text = option[component.source.text]
-                  optionList.push(option)
-                }
-                Vue.set(this.options, component.source.model, optionList)
-              },
-              () => { }
-            )
-          } else if (component.type === 'table') {
-            Vue.set(this.fields, component.id, [])
-            Vue.set(this.isBusy, component.id, false)
-            Vue.set(this.filter, component.id, {})
-            Vue.set(this.currentPage, component.id, 1)
-            Vue.set(this.perPage, component.id, 5)
-            Vue.set(this.totalRows, component.id, 0)
-            for (let i = 0; i < component.fields.length; i++) {
-              let field = component.fields[i]
-              // let columnMap = {key: field.key, label: field.label, sortable: field.sortable, class: field.class}
-              if (field.type === 'date') {
-                field.formatter = (value, key, item) => {
-                  let format = 'YYYY-MM-DD'
-                  if (field.format) format = field.format
-                  let utcTime = moment.utc(value, 'x')
-                  // momentjs is mutable, doing moment.utc(value, 'x').local() will change all
-                  let localTime = moment(utcTime).local()
-                  return localTime.format(format)
-                }
-              } else if (field.type === 'stringlist') {
-                if (field.source) {
-                  api.get('generic/class/' + field.source.model,
-                    (response) => {
-                      let optionList = []
-                      for (let i = 0; i < response.data.length; i++) {
-                        let option = response.data[i]
-                        option.value = option[field.source.value]
-                        option.text = option[field.source.text]
-                        optionList.push(option)
-                      }
-                      Vue.set(this.options, field.source.model, optionList)
-                    },
-                    () => { }
-                  )
-                }
-                field.formatter = (value, key, item) => {
-                  let result = ''
-                  if (field.source && value && this.options[field.source.model]) {
-                    let option = this.options[field.source.model]
-                    let optionMap = {}
-                    for (let j = 0; j < option.length; j++) {
-                      optionMap[option[j].value] = option[j]
-                    }
-                    for (let k = 0; k < value.length; k++) {
-                      if (result === '') {
-                        if (optionMap.hasOwnProperty(value[k])) result += optionMap[value[k]].text
-                        else result += '<' + value[k] + '>'
-                      } else {
-                        if (optionMap.hasOwnProperty(value[k])) result += ', ' + optionMap[value[k]].text
-                        else result += ', <' + value[k] + '>'
-                      }
-                    }
-                  } else if (field.data && value) {
-                    let option = field.data
-                    let optionMap = {}
-                    for (let j = 0; j < option.length; j++) {
-                      optionMap[option[j].value] = option[j]
-                    }
-                    for (let k = 0; k < value.length; k++) {
-                      if (result === '') {
-                        result += optionMap[value[k]].text
-                      } else {
-                        result += ', ' + optionMap[value[k]].text
-                      }
-                    }
+          let cellComponentGroup = colComponentList[col]
+          let cellComponentList = cellComponentGroup.content
+          for (let cellNum = 0; cellNum < cellComponentList.length; cellNum++) {
+            let component = cellComponentList[cellNum]
+            if ((component.type === 'dropdown' || component.type === 'radiobutton' || component.type === 'checkbox') && component.source) {
+              api.get('generic/class/' + component.source.model,
+                (response) => {
+                  let optionList = []
+                  for (let i = 0; i < response.data.length; i++) {
+                    let option = response.data[i]
+                    option.value = option[component.source.value]
+                    option.text = option[component.source.text]
+                    optionList.push(option)
                   }
-                  return result
+                  Vue.set(this.options, component.source.model, optionList)
+                },
+                () => { }
+              )
+            } else if (component.type === 'table') {
+              Vue.set(this.fields, component.id, [])
+              Vue.set(this.filter, component.id, {})
+              Vue.set(this.currentPage, component.id, 1)
+              Vue.set(this.perPage, component.id, 5)
+              Vue.set(this.totalRows, component.id, 0)
+              for (let i = 0; i < component.fields.length; i++) {
+                let field = component.fields[i]
+                // let columnMap = {key: field.key, label: field.label, sortable: field.sortable, class: field.class}
+                if (field.type === 'date') {
+                  field.formatter = (value, key, item) => {
+                    let format = 'YYYY-MM-DD'
+                    if (field.format) format = field.format
+                    let utcTime = moment.utc(getObjectFromString(item, key), 'x')
+                    // momentjs is mutable, doing moment.utc(value, 'x').local() will change all
+                    let localTime = moment(utcTime).local()
+                    return localTime.format(format)
+                  }
+                } else if (field.type === 'stringlist') {
+                  if (field.source) {
+                    api.get('generic/class/' + field.source.model,
+                      (response) => {
+                        let optionList = []
+                        for (let i = 0; i < response.data.length; i++) {
+                          let option = response.data[i]
+                          option.value = option[field.source.value]
+                          option.text = option[field.source.text]
+                          optionList.push(option)
+                        }
+                        Vue.set(this.options, field.source.model, optionList)
+                      },
+                      () => { }
+                    )
+                  }
+                  field.formatter = (value, key, item) => {
+                    let val = getObjectFromString(item, key)
+                    let result = ''
+                    if (field.source && val && this.options[field.source.model]) {
+                      let option = this.options[field.source.model]
+                      let optionMap = {}
+                      for (let j = 0; j < option.length; j++) {
+                        optionMap[option[j].value] = option[j]
+                      }
+                      for (let k = 0; k < val.length; k++) {
+                        if (result === '') {
+                          if (optionMap.hasOwnProperty(val[k])) result += optionMap[val[k]].text
+                          else result += '<' + val[k] + '>'
+                        } else {
+                          if (optionMap.hasOwnProperty(val[k])) result += ', ' + optionMap[val[k]].text
+                          else result += ', <' + val[k] + '>'
+                        }
+                      }
+                    } else if (field.data && val) {
+                      let option = field.data
+                      let optionMap = {}
+                      for (let j = 0; j < option.length; j++) {
+                        optionMap[option[j].value] = option[j]
+                      }
+                      for (let k = 0; k < val.length; k++) {
+                        if (result === '') {
+                          result += optionMap[val[k]].text
+                        } else {
+                          result += ', ' + optionMap[val[k]].text
+                        }
+                      }
+                    }
+                    return result
+                  }
+                } else {
+                  field.formatter = (value, key, item) => {
+                    return getObjectFromString(item, key)
+                  }
                 }
+                this.fields[component.id].splice(this.fields[component.id].length, 1, field)
               }
-              this.fields[component.id].splice(this.fields[component.id].length, 1, field)
+              this.fields[component.id].splice(this.fields[component.id].length, 1, { key: 'actions', label: 'Actions' })
             }
-            this.fields[component.id].splice(this.fields[component.id].length, 1, { key: 'actions', label: 'Actions' })
           }
         }
       }
@@ -247,7 +280,6 @@ export default {
       let token = ctx.apiUrl.split(';')
       let compId = token[0]
       let apiUrl = token[1]
-      this.isBusy[compId] = true
       let empty = []
       let filter = this.filter[compId]
       let params = '?page=' + (ctx.currentPage - 1) + '&size=' + ctx.perPage
@@ -445,6 +477,9 @@ export default {
     evaluateString (strStatement, component, data) {
       // eslint-disable-next-line no-eval
       return eval(strStatement)
+    },
+    uploadb64 (data, component, dataUri) {
+      Vue.set(data, component.model, dataUri)
     }
   }
 }
@@ -454,8 +489,15 @@ function orderComponentList (componentList) {
   // group all row component
   let rowMap = {}
   let maxRow = 0
+  componentList.sort(function (comp1, comp2) {
+    if (!comp1.row && !comp2.row) return -1
+    else if (comp1.row && !comp2.row) return -1
+    else if (!comp1.row && comp2.row) return 1
+    else return comp1.row - comp2.row
+  })
   for (let i = 0; i < componentList.length; i++) {
     let component = componentList[i]
+    if (!component.row) component.row = maxRow + 1
     if (component.row > maxRow) maxRow = component.row
     if (rowMap[component.row]) {
       rowMap[component.row].push(component)
@@ -464,32 +506,22 @@ function orderComponentList (componentList) {
     }
   }
   // sorting each column of row to start from little column number
-  for (let property in rowMap) {
-    if (rowMap.hasOwnProperty(property)) {
-      rowMap[property].sort(function (comp1, comp2) {
-        return comp1.col - comp2.col
+  for (let row in rowMap) {
+    if (rowMap.hasOwnProperty(row)) {
+      rowMap[row].sort(function (comp1, comp2) {
+        if (!comp1.col && !comp2.col) return -1
+        else if (comp1.col && !comp2.col) return -1
+        else if (!comp1.col && comp2.col) return 1
+        else return comp1.col - comp2.col
       })
-      let rowContent = []
-      let colComponentList = rowMap[property]
-      // add space to gap between columns
-      let currentCol = 1
-      for (let i = 0; i < colComponentList.length; i++) {
-        let colComponent = colComponentList[i]
-        if (colComponent.col > currentCol) {
-          rowContent.push({'row': property - 0, 'col': currentCol, 'width': colComponent.col - currentCol, 'type': 'space'})
-          rowContent.push(colComponent)
-        } else {
-          rowContent.push(colComponent)
-        }
-        currentCol = colComponent.col + colComponent.width
+      // change rowMap[row] from list of component to list of [component, component,...]
+      for (let i = 0; i < rowMap[row].length; i++) {
+        let component = rowMap[row][i]
+        if (component.type === 'group') rowMap[row][i] = component
+        else rowMap[row][i] = { col: component.col, width: component.width, row: component.row, offset: component.offset, content: [component] }
       }
-      if (currentCol < 12) {
-        rowContent.push({'row': property - 0, 'col': currentCol, 'width': 12 - (currentCol - 1), 'type': 'space'})
-      }
-      rowMap[property] = rowContent
     }
   }
-
   for (let i = 0; i <= maxRow; i++) {
     if (rowMap.hasOwnProperty(i)) {
       result.push(rowMap[i])
@@ -546,6 +578,16 @@ function escapeRegExp (str) {
 function replaceAll (find, replace, str) {
   return str.replace(new RegExp(escapeRegExp(find), 'g'), replace)
 }
+/*
+function getBase64 (file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => resolve(reader.result)
+    reader.onerror = error => reject(error)
+  })
+}
+*/
 </script>
 
 <style lang="css">

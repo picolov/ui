@@ -10,6 +10,7 @@ import App from './App'
 import store from './store'
 import router from './router'
 import { VeeValidate, VeeConfig } from './validation'
+import FileUploadBase64 from './components/FileUploadBase64'
 import GenericContainer from './containers/Container'
 import GenericTabs from './containers/Tabs'
 import GenericMultiStep from './containers/MultiStep'
@@ -28,6 +29,7 @@ Vue.use(VeeValidate, VeeConfig)
 Vue.component('generic-container', GenericContainer)
 Vue.component('generic-tabs', GenericTabs)
 Vue.component('generic-multistep', GenericMultiStep)
+Vue.component('generic-filebase64', FileUploadBase64)
 
 const EventBus = new Vue()
 
@@ -41,7 +43,6 @@ Object.defineProperties(Vue.prototype, {
 
 router.beforeEach((to, from, next) => {
   if (!store.state.user.logged) {
-    console.log('user not logged')
     store.dispatch('getInfo')
   }
   next()

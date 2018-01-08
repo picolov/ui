@@ -26,7 +26,6 @@ const getters = {
 // actions
 const actions = {
   getInfo ({ commit, state }) {
-    console.log('calling uaa/api/account')
     api.get(
       'uaa/api/account',
       (response) => {
@@ -38,7 +37,6 @@ const actions = {
     )
   },
   logout ({ commit, state }) {
-    console.log('logout')
     localStorage.clear()
     api.post(
       'auth/logout', {},
