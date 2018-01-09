@@ -119,7 +119,7 @@ export default {
   list-style: none;
   background-color: #fff;
   background-clip: padding-box;
-  border: 1px solid #c2cfd6;
+  border: none;
 }
 </style>
 

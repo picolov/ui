@@ -14,6 +14,9 @@
             <generic-multistep :id="component.id" :components="component.content" :data="data" :back-button-text="component.backButtonText" :next-button-text="component.nextButtonText" :finish-button-text="component.finishButtonText" @finish="btnClick(component.finishAction, component)" :fullwidth="component.fullwidth" :style="component.style"/>
           </span>
           <!-- Basic Component -->
+          <span v-else-if="component.type === 'hline'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <hr :style="component.style"/>
+          </span>
           <span v-else-if="component.type === 'label' && component.text && !component.model" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
             <component :is="component.viewAs?component.viewAs:'label'" :id="component.id" :style="component.style">{{component.text | translate}} <small v-if="component.mandatory" class="text-danger">*</small></component>
           </span>
@@ -330,14 +333,25 @@ export default {
       let url = stringInject(action.url, mapInject)
       switch (action.type) {
         case 'getData':
-          api.get(url,
-            (response) => {
-              for (let key in response.data) {
-                Vue.set(this.data, action.prefix ? action.prefix + '_' + key : key, response.data[key])
-              }
-            },
-            () => { }
-          )
+          if (action.method && action.method === 'post') {
+            api.post(url, {},
+              (response) => {
+                for (let key in response.data) {
+                  Vue.set(this.data, action.prefix ? action.prefix + '_' + key : key, response.data[key])
+                }
+              },
+              () => { }
+            )
+          } else {
+            api.get(url,
+              (response) => {
+                for (let key in response.data) {
+                  Vue.set(this.data, action.prefix ? action.prefix + '_' + key : key, response.data[key])
+                }
+              },
+              () => { }
+            )
+          }
           break
         case 'goto':
           this.$router.push({ path: url })

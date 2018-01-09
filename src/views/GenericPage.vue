@@ -61,14 +61,25 @@ export default {
       let url = stringInject(action.url, mapInject)
       switch (action.type) {
         case 'getData':
-          api.get(url,
-            (response) => {
-              for (let key in response.data) {
-                Vue.set(this.data, action.prefix ? action.prefix + '_' + key : key, response.data[key])
-              }
-            },
-            () => { }
-          )
+          if (action.method && action.method === 'post') {
+            api.post(url, {},
+              (response) => {
+                for (let key in response.data) {
+                  Vue.set(this.data, action.prefix ? action.prefix + '_' + key : key, response.data[key])
+                }
+              },
+              () => { }
+            )
+          } else {
+            api.get(url,
+              (response) => {
+                for (let key in response.data) {
+                  Vue.set(this.data, action.prefix ? action.prefix + '_' + key : key, response.data[key])
+                }
+              },
+              () => { }
+            )
+          }
           break
         case 'goto':
           this.$router.push({ path: url })
