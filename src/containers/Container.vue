@@ -1,7 +1,7 @@
 <template>
   <component :is="attr.viewAs?attr.viewAs:'div'" :class="{'w-100':fullwidth}">
     <div class="row py-1" v-for="(colComponentList, indexRow) in rowComponentList" :key="indexRow">
-      <div v-for="(cellComponent, indexCol) in colComponentList" :key="indexCol" :style="cellComponent.style" :class="['cell-component', cellComponent.width?'col-' + cellComponent.width:'col', cellComponent.offset?'offset-' + cellComponent.offset:null]">
+      <div v-for="(cellComponent, indexCol) in colComponentList" :key="indexCol" :style="cellComponent.style" :class="[cellComponent.isGroup?'group-cell':null, cellComponent.noMargin? 'm-0': null, cellComponent.noPadding? 'p-0': null, cellComponent.align?'align-' + cellComponent.align: null, cellComponent.width?'col-' + cellComponent.width:'col', cellComponent.offset?'offset-' + cellComponent.offset:null]">
         <template v-for="(component, indexCell) in cellComponent.content" v-if="component.ifCondition ? evaluateString(component.ifCondition, component, data) : true">
           <!-- Container -->
           <span v-if="component.type === 'container'" :class="{'float-right':component.h_align==='right', 'w-100':component.fullwidth !== false}" :key="indexCell">
@@ -18,10 +18,10 @@
             <hr :style="component.style"/>
           </span>
           <span v-else-if="component.type === 'label' && component.text && !component.model" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
-            <component :is="component.viewAs?component.viewAs:'label'" :id="component.id" :style="component.style">{{component.text | translate}} <small v-if="component.mandatory" class="text-danger">*</small></component>
+            <component :is="component.viewAs?component.viewAs:'label'" :id="component.id" :style="[component.style, {margin: 0, paddingTop: '0.5em'}]">{{component.text | translate}} <small v-if="component.mandatory" class="text-danger">*</small></component>
           </span>
           <span v-else-if="component.type === 'label' && !component.text && component.model" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
-            <label :id="component.id" :style="component.style">{{getObjectFromString(component.model)}}</label>
+            <label :id="component.id" :style="[component.style, {margin: 0, paddingTop: '0.5em'}]">{{getObjectFromString(component.model)}}</label>
           </span>
           <span v-else-if="component.type === 'imageb64' && !component.source && component.model" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
             <b-img-lazy :id="component.id" :style="component.style" :src="getObjectFromString(component.model)?getObjectFromString(component.model):''" :rounded="component.shape==='circle'?'circle':'0'" :width="component.imgWidth" :height="component.imgHeight" />
@@ -75,12 +75,36 @@
             <b-form-checkbox-group :id="component.id" :name="component.model" :checked="checkboxValue(data[component.model])" @input="checkboxInput(component, $event)" :options="options[component.source.model]" :style="component.style"/>      
           </span>
           <span v-else-if="component.type === 'button'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
-            <b-button :id="component.id" @click="btnClick(component.action, component)" :style="component.style">{{component.text | translate}}</b-button>
+            <b-button :id="component.id" @click="btnClick(component.action, component)" :style="[component.style, component.style == null || component.style.width == null ? {minWidth: '120px'}:null]"><i v-if="component.icon" :class="[component.icon]"/> {{component.text | translate}}</b-button>
           </span>
           <!-- Complex Component -->
+          <span v-else-if="component.type === 'map'" :key="indexCell">
+            <gmap-map
+              :center="{lat:-6.2152408, lng:106.8301251}"
+              :zoom="12"
+              map-type-id="hybrid"
+              style="width: 100%; height: 300px"
+              :options="{
+                fullscreenControl: false,
+                mapTypeControl: false,
+                zoomControl: true,
+                zoomControlOptions: {
+                  position: 9
+                },
+                rotateControl: false,
+                scaleControl: true,
+                scaleControlOptions: {
+                  position: 12
+                },
+                streetViewControl: false,
+                backgroundColor: 'grey',
+                scrollwheel: false
+              }"
+              :key="indexCell">
+            </gmap-map>
+          </span>
           <span v-else-if="component.type === 'table' && fields[component.id] != null" :key="indexCell">
             <b-table :ref="component.id"
-              bordered
               head-variant="dark"
               :apiUrl="component.id + ';' + component.model"
               :items="myProvider" 
@@ -90,7 +114,7 @@
               :style="component.style">
               <template v-for="field in fields[component.id]" :slot="'HEAD_' + field.key" v-if="field.key != 'actions'" slot-scope="data">
                 <h6 class="text-center" :key="field.key">{{data.label | translate}}</h6>
-                <input type="text" @click.stop=";" v-model="filter[component.id][field.key]" @keyup="filterTyped(component)" :key="field.key" style="width: 100%;"/>
+                <input v-if="field.filter" type="text" @click.stop=";" v-model="filter[component.id][field.key]" @keyup="filterTyped(component)" :key="field.key" style="width: 100%;"/>
               </template>
               <template slot="HEAD_actions" v-if="component.actions != undefined" slot-scope="data">
                 <h6 class="text-center">{{data.label | translate}}</h6>
@@ -195,7 +219,20 @@ export default {
               )
             } else if (component.type === 'table') {
               Vue.set(this.fields, component.id, [])
-              Vue.set(this.filter, component.id, {})
+              if (component.criteria) {
+                let filterCrit = {}
+                let processedCrit = stringInject(component.criteria, this.data)
+                let tokenListCrit = processedCrit.split(',')
+                for (let i = 0; i < tokenListCrit.length; i++) {
+                  let tokenCrit = tokenListCrit[i].split(';')
+                  let critKey = tokenCrit[0]
+                  let critVal = tokenCrit[2]
+                  filterCrit[critKey] = critVal
+                }
+                Vue.set(this.filter, component.id, filterCrit)
+              } else {
+                Vue.set(this.filter, component.id, {})
+              }
               Vue.set(this.currentPage, component.id, 1)
               Vue.set(this.perPage, component.id, 5)
               Vue.set(this.totalRows, component.id, 0)
@@ -355,6 +392,9 @@ export default {
           break
         case 'goto':
           this.$router.push({ path: url })
+          break
+        case 'goback':
+          this.$router.go(-1)
           break
         case 'exec':
           if (!action.use_validate) {
@@ -531,8 +571,12 @@ function orderComponentList (componentList) {
       // change rowMap[row] from list of component to list of [component, component,...]
       for (let i = 0; i < rowMap[row].length; i++) {
         let component = rowMap[row][i]
-        if (component.type === 'group') rowMap[row][i] = component
-        else rowMap[row][i] = { col: component.col, width: component.width, row: component.row, offset: component.offset, content: [component] }
+        if (component.type === 'group') {
+          component.isGroup = true
+          rowMap[row][i] = component
+        } else {
+          rowMap[row][i] = { isGroup: false, col: component.col, width: component.width, row: component.row, offset: component.offset, align: component.align, noPadding: component.noPadding, content: [component] }
+        }
       }
     }
   }
@@ -625,5 +669,17 @@ function getBase64 (file) {
 
   .full-width {
     width: 100%;
+  }
+
+  .align-center {
+    text-align: center;
+  }
+
+  .align-right {
+    text-align: right;
+  }
+
+  .align-left {
+    text-align: left;
   }
 </style>

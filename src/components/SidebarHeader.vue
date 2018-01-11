@@ -1,9 +1,9 @@
 <template>
   <div class="sidebar-header">
     <img src="static/img/avatars/8.jpg" alt="Avatar" class="img-avatar"> 
-    <div>
+    <div style="padding-bottom: 0.5em;">
       <strong>{{user ? (user.firstName && user.lastName ? user.firstName + ' ' + user.lastName : user.login) : ''}}</strong>
-    </div> 
+    </div>
     <b-button @click="switchMode()">{{mode === 'ROLE_CLIENT'?'Client':mode === 'ROLE_VENDOR'?'Vendor':mode === 'ROLE_ADMIN'?'Admin':'Unverified'}} &nbsp;<i class="fa fa-refresh"></i></b-button>
   </div>
 </template>

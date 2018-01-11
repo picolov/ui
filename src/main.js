@@ -6,6 +6,7 @@ import BootstrapVue from 'bootstrap-vue'
 import VueSwal from 'vue-swal'
 import DatePicker from 'vue2-datepicker'
 import VueFormWizard from 'vue-form-wizard'
+import * as VueGoogleMaps from 'vue2-google-maps'
 import App from './App'
 import store from './store'
 import router from './router'
@@ -22,6 +23,12 @@ Vue.use(BootstrapVue)
 Vue.use(VueSwal)
 Vue.use(DatePicker)
 Vue.use(VueFormWizard)
+Vue.use(VueGoogleMaps, {
+  load: {
+    key: 'AIzaSyAf19UCebSUpJcNp9U0T6zz10GqY4dNlfc'
+    // libraries: 'places', //// If you need to use place input
+  }
+})
 
 // set the start locale to use
 Vue.i18n.set('en')

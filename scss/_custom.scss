@@ -27,6 +27,12 @@
     border-bottom: solid 1px #c2cfd690;
 }
 
+.row {
+    min-height: 3em;
+    margin-left: 0;
+    margin-right: 0;
+}
+
 .card {
     border: none;
     border-radius: 8px;
@@ -34,4 +40,21 @@
 	-moz-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 30px 0 rgba(0, 0, 0, 0.1);
 	-webkit-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 30px 0 rgba(0, 0, 0, 0.1);
 	-o-box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.15), 0 6px 30px 0 rgba(0, 0, 0, 0.1);
+}
+
+.btn {
+    border-radius: 60px;
+    border: solid thin #757575;
+    color: black;
+    font-weight: bold;
+    background-color: transparent;
+}
+
+.btn:hover {
+    border: solid thin #757575;
+}
+
+input,
+.form-control {
+    border-radius: 5px;
 }
