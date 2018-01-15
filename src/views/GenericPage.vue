@@ -1,12 +1,56 @@
 <template>
   <div class="animated fadeIn">
-    <generic-container v-if="componentList !== null" :name="id" :components="componentList" :attr="attr" :data="data"/>
+    <generic-container v-if="componentList !== null" :name="id" :components="componentList" :attr="attr" :data="data" :shared="shared"/>
+    <!-- Modal Component -->
+    <b-modal id="info-alert" v-model="infoAlertShow" @ok="okAlertClick" centered :title="alertTitle" :hide-header-close="true" :ok-only="true" :no-close-on-backdrop="true">
+      <h3>{{alertMessage}}</h3>
+    </b-modal>
+    <b-modal id="yesNo-alert" v-model="yesNoAlertShow" @ok="okAlertClick" centered :title="alertTitle" :hide-header-close="true" :no-close-on-backdrop="true">
+      <h3>{{alertMessage}}</h3>
+    </b-modal>
+    <b-modal id="mapPicker-alert" ref="mapPickerModal" v-model="mapPickerAlertShow" @show="mapPickerShow" @shown="mapPickerShown" centered :hide-header="true" :hide-footer="true">
+      <div style="padding-bottom: 1em">
+        <label style="float:left; width:8em;;">Search Location :</label>
+        <div style="margin-left: 8em;"><gmap-autocomplete :value="locationSearch" @place_changed="searchLocation" style="width: 100%"></gmap-autocomplete></div>
+      </div>
+      <gmap-map
+        ref="mapPickerMap"
+        :center="locationPicked"
+        :zoom="12"
+        map-type-id="hybrid"
+        style="width: 100%; height: 20em"
+        :options="{
+          fullscreenControl: false,
+          mapTypeControl: false,
+          zoomControl: true,
+          zoomControlOptions: {
+            position: 9
+          },
+          rotateControl: false,
+          scaleControl: true,
+          scaleControlOptions: {
+            position: 12
+          },
+          streetViewControl: false,
+          backgroundColor: 'grey',
+          scrollwheel: false
+        }">
+        <gmap-marker
+          :position="locationPicked"
+          :clickable="true"
+          :draggable="true"
+          @dragend="updateLocation"
+        ></gmap-marker>
+      </gmap-map>
+      <b-button @click="selectLocationClick" style="width: 100%; margin-top: 1em;">Pick This Location</b-button>
+    </b-modal>
   </div>
 </template>
 
 <script>
 import Vue from 'vue'
-import { SET_PAGE } from '../store/mutation-types'
+import { mapState, mapMutations } from 'vuex'
+import { SET_PAGE, SET_ALERT_SHOW, SET_MAPPICKER_SHOW } from '../store/mutation-types'
 import api from '../api/common'
 
 export default {
@@ -18,8 +62,44 @@ export default {
       attr: {
         viewAs: 'div'
       },
-      data: {}
+      data: {},
+      shared: {
+        refs: {},
+        mapComponent: []
+      },
+      locationSearch: '',
+      locationPicked: {lat: 0, lng: 0}
     }
+  },
+  computed: {
+    infoAlertShow: {
+      get: function () {
+        return this.$store.state.app.infoAlertShow
+      },
+      set: function (newValue) {
+        this.setAlertShow({alertType: 'info', alertIsShow: newValue})
+      }
+    },
+    yesNoAlertShow: {
+      get: function () {
+        return this.$store.state.app.yesNoAlertShow
+      },
+      set: function (newValue) {
+        this.setAlertShow({alertType: 'yesNo', alertIsShow: newValue})
+      }
+    },
+    mapPickerAlertShow: {
+      get: function () {
+        return this.$store.state.app.mapPickerAlertShow
+      },
+      set: function (newValue) {
+        this.setMapPickerShow({alertIsShow: newValue})
+      }
+    },
+    ...mapState({ alertTitle: state => state.app.alertTitle }),
+    ...mapState({ alertMessage: state => state.app.alertMessage }),
+    ...mapState({ okCallback: state => state.app.okCallback }),
+    ...mapState({ selectLocationCallback: state => state.app.selectLocationCallback })
   },
   created () {
     this.fetchData()
@@ -95,7 +175,35 @@ export default {
           console.log('ERROR when loading page ' + this.$route.params.page)
         }
       )
-    }
+    },
+    okAlertClick () {
+      this.okCallback()
+    },
+    selectLocationClick () {
+      this.selectLocationCallback(this.locationPicked)
+      this.$refs.mapPickerModal.hide()
+    },
+    mapPickerShow () {
+      this.locationPicked.lat = this.$store.state.app.locationPicked.lat
+      this.locationPicked.lng = this.$store.state.app.locationPicked.lng
+    },
+    mapPickerShown () {
+      this.$refs.mapPickerMap.resizePreserveCenter()
+    },
+    updateLocation (obj) {
+      this.locationPicked.lat = obj.latLng.lat()
+      this.locationPicked.lng = obj.latLng.lng()
+    },
+    searchLocation (place) {
+      this.locationPicked.lat = place.geometry.location.lat()
+      this.locationPicked.lng = place.geometry.location.lng()
+    },
+    ...mapMutations({
+      setAlertShow: SET_ALERT_SHOW
+    }),
+    ...mapMutations({
+      setMapPickerShow: SET_MAPPICKER_SHOW
+    })
   }
 }
 

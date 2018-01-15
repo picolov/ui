@@ -28,7 +28,7 @@
 }
 
 .row {
-    min-height: 3em;
+    // min-height: 3em;
     margin-left: 0;
     margin-right: 0;
 }
@@ -57,4 +57,12 @@
 input,
 .form-control {
     border-radius: 5px;
+}
+
+.modal-content {
+    border-radius: 10px;
+}
+
+.pac-container {
+    z-index: 1051; // because .modal bootstrap is having z-index 1050, so our autocomplete pop up will obstructed if below
 }

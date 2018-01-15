@@ -3,7 +3,6 @@
 import Vue from 'vue'
 import vuexI18n from 'vuex-i18n'
 import BootstrapVue from 'bootstrap-vue'
-import VueSwal from 'vue-swal'
 import DatePicker from 'vue2-datepicker'
 import VueFormWizard from 'vue-form-wizard'
 import * as VueGoogleMaps from 'vue2-google-maps'
@@ -20,13 +19,12 @@ import 'vue-form-wizard/dist/vue-form-wizard.min.css'
 
 Vue.use(vuexI18n.plugin, store)
 Vue.use(BootstrapVue)
-Vue.use(VueSwal)
 Vue.use(DatePicker)
 Vue.use(VueFormWizard)
 Vue.use(VueGoogleMaps, {
   load: {
-    key: 'AIzaSyAf19UCebSUpJcNp9U0T6zz10GqY4dNlfc'
-    // libraries: 'places', //// If you need to use place input
+    key: 'AIzaSyAf19UCebSUpJcNp9U0T6zz10GqY4dNlfc',
+    libraries: 'places' // If you need to use place input
   }
 })
 

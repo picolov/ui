@@ -1,8 +1,8 @@
 <template>
   <div class="sidebar-header">
-    <img src="static/img/avatars/8.jpg" alt="Avatar" class="img-avatar"> 
+    <b-img-lazy id="img-avatar" :src="user ? (user.userProfile ? user.userProfile.photo : '') : ''" rounded="circle" width="100px" height="100px" />
     <div style="padding-bottom: 0.5em;">
-      <strong>{{user ? (user.firstName && user.lastName ? user.firstName + ' ' + user.lastName : user.login) : ''}}</strong>
+      <strong>{{user ? (user.userProfile ? user.userProfile.displayName : user.login) : ''}}</strong>
     </div>
     <b-button @click="switchMode()">{{mode === 'ROLE_CLIENT'?'Client':mode === 'ROLE_VENDOR'?'Vendor':mode === 'ROLE_ADMIN'?'Admin':'Unverified'}} &nbsp;<i class="fa fa-refresh"></i></b-button>
   </div>

@@ -2,7 +2,7 @@
   <b-card no-body :class="{'w-100':fullwidth}">
     <b-tabs card>
       <b-tab v-for="(component, index) in components" :key="index" :title="component.title?component.title:'tab-' + index">
-        <generic-container :name="component.id" :components="component.content" :view-as="component.viewAs" :data="data"/>
+        <generic-container :name="component.id" :components="component.content" :view-as="component.viewAs" :data="data" :shared="shared"/>
       </b-tab>
     </b-tabs>
   </b-card>
@@ -21,6 +21,11 @@ export default {
       default: () => []
     },
     data: {
+      type: Object,
+      required: true,
+      default: () => {}
+    },
+    shared: {
       type: Object,
       required: true,
       default: () => {}

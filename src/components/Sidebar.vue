@@ -15,7 +15,7 @@
           <template v-else>
             <template v-if="item.children">
               <!-- First level dropdown -->
-              <SidebarNavDropdown :name="$t(item.name)" :url="item.url" :icon="item.icon">
+              <SidebarNavDropdown :name="$t(item.name)" :url="item.url" :activeWhenUrl="item.activeWhenUrl" :icon="item.icon">
                 <template v-for="(childL1, index) in item.children">
                   <template v-if="childL1.children">
                     <!-- Second level dropdown -->

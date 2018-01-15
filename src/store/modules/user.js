@@ -26,8 +26,8 @@ const getters = {
 // actions
 const actions = {
   getInfo ({ commit, state }) {
-    api.get(
-      'uaa/api/account',
+    api.post(
+      'generic/flow/process/getInfo', {},
       (response) => {
         commit(types.SET_USER, response.data)
         commit(types.SET_MENU, {menus: response.data.menus, authMenus: response.data.authMenus})

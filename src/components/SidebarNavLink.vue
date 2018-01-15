@@ -54,7 +54,15 @@
         return this.variant ? `nav-link-${this.variant}` : ''
       },
       checkActiveUrl () {
-        return this.$route.path.indexOf(this.activeWhenUrl) > -1 ? 'open active' : ''
+        let classResult = ''
+        let activeWhenUrlToken = this.activeWhenUrl.split(',')
+        for (let i = 0; i < activeWhenUrlToken.length; i++) {
+          if (this.$route.path.indexOf(activeWhenUrlToken[i].trim()) > -1) {
+            classResult = 'open active'
+            break
+          }
+        }
+        return classResult
       },
       isExternalLink () {
         if (this.url.substring(0, 4) === 'http') {

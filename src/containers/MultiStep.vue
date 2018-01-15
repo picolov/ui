@@ -8,7 +8,7 @@
               :class="{'w-100':fullwidth}">
     <span slot="title"></span> 
     <tab-content v-for="(component, index) in components" :key="index" :title="component.title?component.title:'tab-' + index">
-      <generic-container :name="component.id" :components="component.content" :view-as="component.viewAs" :data="data"/>
+      <generic-container :name="component.id" :components="component.content" :view-as="component.viewAs" :data="data" :shared="shared"/>
     </tab-content>
   </form-wizard>
 </template>
@@ -26,6 +26,11 @@ export default {
       default: () => []
     },
     data: {
+      type: Object,
+      required: true,
+      default: () => {}
+    },
+    shared: {
       type: Object,
       required: true,
       default: () => {}
