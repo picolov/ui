@@ -5,15 +5,18 @@
               :next-button-text="nextButtonText"
               :finish-button-text="finishButtonText" 
               @on-complete="onComplete"
+              @on-change="onChange"
               :class="{'w-100':fullwidth}">
     <span slot="title"></span> 
-    <tab-content v-for="(component, index) in components" :key="index" :title="component.title?component.title:'tab-' + index">
+    <tab-content v-for="(component, index) in components" :key="index" :title="component.title?component.title:'tab-' + index" :before-change="beforeTabSwitch.bind(this, component)">
       <generic-container :name="component.id" :components="component.content" :view-as="component.viewAs" :data="data" :shared="shared"/>
     </tab-content>
   </form-wizard>
 </template>
 
 <script>
+// eslint-disable-next-line no-unused-vars
+import Vue from 'vue'
 
 export default {
   name: 'generic-multistep',
@@ -63,7 +66,45 @@ export default {
   },
   methods: {
     onComplete () {
+      console.log('This is called on complete')
       this.$emit('finish')
+    },
+    onChange (prevIdx, nextIdx) {
+      let component = this.components[nextIdx]
+      console.log('This is called on change - ' + component.id)
+      // eslint-disable-next-line no-unused-vars
+      let data = this.data
+      // eslint-disable-next-line no-unused-vars
+      let setVar = this.setVar
+      // eslint-disable-next-line no-unused-vars
+      let refreshMap = this.refreshMap
+      console.log('change action : ' + component.changeAction)
+      if (component.changeAction) {
+        // eslint-disable-next-line no-eval
+        eval('(function() {' + component.changeAction + '}())')
+      }
+    },
+    beforeTabSwitch: function (component) {
+      // eslint-disable-next-line no-unused-vars
+      let data = this.data
+      // eslint-disable-next-line no-unused-vars
+      let setVar = this.setVar
+      // eslint-disable-next-line no-unused-vars
+      let refreshMapId = this.refreshMapId
+      console.log('next action : ' + component.nextAction)
+      if (component.nextAction) {
+        // eslint-disable-next-line no-eval
+        var result = eval('(function() {' + component.nextAction + '}())')
+        return result
+      } else {
+        return true
+      }
+    },
+    setVar (data, name, value) {
+      Vue.set(data, name, value)
+    },
+    refreshMap () {
+      Vue.$gmapDefaultResizeBus.$emit('resize')
     }
   }
 }

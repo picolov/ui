@@ -1,11 +1,15 @@
 <template>
   <component :is="attr.viewAs?attr.viewAs:'div'" :class="{'w-100':fullwidth}" :id="containerId">
-    <div class="row py-1" v-for="(colComponentList, indexRow) in rowComponentList" :key="indexRow">
-      <div v-for="(cellComponent, indexCol) in colComponentList" :key="indexCol" :style="cellComponent.style" :class="[cellComponent.isGroup?'group-cell':null, cellComponent.noMargin? 'm-0': null, cellComponent.noPadding? 'p-0': null, cellComponent.align?'align-' + cellComponent.align: null, cellComponent.width?'col-' + cellComponent.width:'col', cellComponent.offset?'offset-' + cellComponent.offset:null]">
+    <div v-if="attr.showHeader" class="container-header">
+      <span class="container-header-title">{{attr.title}}</span>
+      <span class="container-header-right"><i class="fa fa-ellipsis-v" style="font-size: 1.8em; line-height: 1.8em;"></i></span>
+    </div>
+    <div v-for="(colComponentList, indexRow) in rowComponentList" :key="indexRow" :class="[(colComponentList[0].ifCondition ? evaluateString(colComponentList[0].ifCondition, colComponentList[0], data, null, null) : true)?'row row-filled':'row row-empty']">
+      <div v-for="(cellComponent, indexCol) in colComponentList" :key="indexCol" v-if="cellComponent.ifCondition ? evaluateString(cellComponent.ifCondition, cellComponent, data, null, null) : true" :style="[cellComponent.style]" :class="[cellComponent.isGroup?'group-cell':null, cellComponent.noMargin? 'm-0': null, cellComponent.noPadding? 'p-0': null, cellComponent.align?'align-' + cellComponent.align: null, cellComponent.width?'col-' + cellComponent.width:'col', cellComponent.offset?'offset-' + cellComponent.offset:null]">
         <template v-for="(component, indexCell) in cellComponent.content" v-if="component.ifCondition ? evaluateString(component.ifCondition, component, data, null, null) : true">
           <!-- Container -->
           <span v-if="component.type === 'container'" :class="{'float-right':component.h_align==='right', 'w-100':component.fullwidth !== false}" :key="indexCell">
-            <generic-container :id="component.id" :components="component.content" :attr="component" :data="data" :shared="shared" :fullwidth="component.fullwidth" :style="component.style"/>
+            <generic-container :id="component.id" :components="component.content" :attr="component" :data="data" :shared="shared" :index-number="indexNumber" :fullwidth="component.fullwidth" :style="component.style"/>
           </span>
           <span v-else-if="component.type === 'tabs'" :class="{'float-right':component.h_align==='right', 'w-100':component.fullwidth !== false}" :key="indexCell">
             <generic-tabs :id="component.id" :components="component.content" :data="data" :shared="shared" :fullwidth="component.fullwidth" :style="component.style"/>
@@ -25,6 +29,9 @@
                   {{stringInjectFunc(component.text, {data: $data, props: $props}) | translate}}   
               </strong>
           </span>
+          <span v-else-if="component.type === 'icon'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+              <i :class="[component.icon]" :style="component.style"></i>
+          </span>
           <span v-else-if="component.type === 'hline'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
             <hr :style="component.style"/>
           </span>
@@ -32,10 +39,10 @@
             <component :is="component.viewAs?component.viewAs:'label'" :id="component.id" :style="[component.style, {margin: 0}]">{{stringInjectFunc(component.text, {data: $data, props: $props}) | translate}} <small v-if="component.mandatory" class="text-danger">*</small></component>
           </span>
           <span v-else-if="component.type === 'label' && !component.text && component.model" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
-            <label :id="component.id" :style="[component.style, {margin: 0}]">{{getObjectFromString(component.model+dataIndex)}}</label>
+            <label :id="component.id" :style="[component.style, {margin: 0}]">{{getObjectFromString(component.model+dataIndex, '')}}</label>
           </span>
           <span v-else-if="component.type === 'imageb64' && !component.source && component.model" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
-            <b-img-lazy :id="component.id" :style="component.style" :src="getObjectFromString(component.model+dataIndex)?getObjectFromString(component.model+dataIndex):''" :rounded="component.shape==='circle'?'circle':'0'" :width="component.imgWidth" :height="component.imgHeight" />
+            <b-img-lazy :id="component.id" :style="component.style" :src="getObjectFromString(component.model+dataIndex, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8Vw8AAmEBb87E6jIAAAAASUVORK5CYII=')" :rounded="component.shape==='circle'?'circle':'0'" :width="component.imgWidth" :height="component.imgHeight" />
           </span>
           <span v-else-if="component.type === 'imageb64' && component.source && !component.model" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
             <b-img-lazy :id="component.id" :style="component.style" :src="component.source" :rounded="component.shape==='circle'?'circle':'0'" :width="component.imgWidth" :height="component.imgHeight" />
@@ -64,6 +71,9 @@
           <span v-else-if="component.type === 'datepicker'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
             <date-picker :id="component.id" format="yyyy-MM-dd" :name="component.model+dataIndex" v-model="data[component.model+dataIndex]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model+dataIndex) ? false : null" lang="en" width="100%" class="full-width" :style="component.style" :placeholder="component.placeholder"/>
           </span>
+          <span v-else-if="component.type === 'datetimepicker'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <date-picker type="datetime" :id="component.id" format="yyyy-MM-dd HH:mm:ss" :name="component.model+dataIndex" v-model="data[component.model+dataIndex]" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model+dataIndex) ? false : null" lang="en" width="100%" class="full-width" :style="component.style" :placeholder="component.placeholder"/>
+          </span>
           <span v-else-if="component.type === 'daterangepicker'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
             <date-picker :id="component.id" range="true" format="yyyy-MM-dd" :name="component.model+dataIndex" v-model="data[component.model+dataIndex]" lang="en" width="100%" class="full-width" v-validate="!component.validation ? '' : component.validation.join('|')" :data-vv-as="component.label | translate" :state="errors.has(component.model+dataIndex) ? false : null" :style="component.style" :placeholder="component.placeholder"/>
           </span>
@@ -72,6 +82,16 @@
           </span>
           <span v-else-if="component.type === 'dropdown' && component.source" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
             <b-form-select :id="component.id" :name="component.model+dataIndex" :value="dropdownValue(data[component.model+dataIndex])" @input="dropdownInput(component.model+dataIndex, component, $event)" :options="options[component.source.model]" :style="component.style" :placeholder="component.placeholder"></b-form-select>
+          </span>
+          <span v-else-if="component.type === 'imagedropdown' && component.data" class="image-dropdown" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <!-- position:absolute;top: 0; bottom: 0; left: 0; right: 0; margin: auto; -->
+            <b-img :src="'https://www.penskeusedtrucks.com/imgs/18-26-diesel-cargo-van-w.jpg'" fluid style="float: left;width: 130px; height: 80px"/>
+            <v-select :id="component.id" v-model="data[component.model+dataIndex]" :options="component.data" label="text" :style="component.style">
+              <template slot="option" slot-scope="option">
+                  <b-img fluid :src="option.imgUrl" style="width: 130px; height: 80px"/>
+                  {{ option.text }}
+              </template>
+            </v-select>
           </span>
           <span v-else-if="component.type === 'radiobutton' && component.data" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
             <b-form-radio-group :id="component.id" :name="component.model+dataIndex" v-model="data[component.model+dataIndex]" :options="component.data" :style="component.style"/>
@@ -85,8 +105,81 @@
           <span v-else-if="component.type === 'checkbox' && component.source" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
             <b-form-checkbox-group :id="component.id" :name="component.model+dataIndex" :checked="checkboxValue(data[component.model+dataIndex])" @input="checkboxInput(component.model+dataIndex, component, $event)" :options="options[component.source.model]" :style="component.style" :placeholder="component.placeholder"/>      
           </span>
+          <span v-else-if="component.type === 'switch' && component.model" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <toggle-button :id="component.id" v-model="data[component.model+dataIndex]" :height="30" :color="{checked: '#ffc928', unchecked: '#ffffff'}" :style="component.style"/>
+          </span>
           <span v-else-if="component.type === 'button'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
             <b-button :id="component.id" @click="btnClick(component.action, component)" :style="[component.style, component.style == null || component.style.width == null ? {minWidth: '120px'}:null]"><i v-if="component.icon" :class="[component.icon]"/> {{component.text | translate}}</b-button>
+          </span>
+          <span :id="component.id + '_wrapper'" v-else-if="component.type === 'dropdownswitch' && component.data" :class="{'float-right':component.h_align==='right', 'dropdownswitch-wrap': true}" :key="indexCell">
+            <b-btn :id="component.id"
+                    variant="primary"
+                    ref="button"
+                    :style="component.style">
+              {{component.text}}
+            </b-btn>
+            <b-popover :target="component.id"
+               triggers="click blur"
+               placement="bottomleft"
+               :container="component.id + '_wrapper'">
+              <div class="dropdown-popover-body">
+                <div class="row" v-for="(option, optionIndex) in component.data" :key="optionIndex" style="padding-bottom: 0.5em;">
+                  <toggle-button @change="switchChanged(option.action, component, option, optionIndex)" v-model="data[option.model+dataIndex]" :height="30" :color="{checked: '#ffc928', unchecked: '#ffffff'}"/>
+                  <label style="position: absolute; left: 70px; white-space: nowrap; line-height: 1.7em; font-size: 1rem;">{{option.text}}</label>
+                </div>
+              </div>
+            </b-popover>
+          </span>
+          <span v-else-if="component.type === 'cardvertical'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-card :title="component.title"
+                    img-src="https://placekitten.com/g/400/450"
+                    img-fluid
+                    img-alt="image"
+                    img-top
+                    :style="component.style">
+              <span class="card-button-top">{{component.statusText}}</span>
+              <p class="card-text">
+                {{component.text}}
+              </p>
+            </b-card>
+          </span>
+          <span v-else-if="component.type === 'cardhorizontal'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-card :style="component.style">
+              <b-img-lazy class="card-image-left" style="width: 7.5em; height: 7.5em" :src="'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8Vw8AAmEBb87E6jIAAAAASUVORK5CYII='" />
+              <span class="card-text" style="display: inline-block; padding-left: 1em;">
+                <span style="font-weight: bold;">{{component.title}}</span><br/>
+                {{component.text}} <br/>
+                <span style="color: #ffc928;"><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star-o"/><i class="fa fa-star-o"/><i class="fa fa-star-o"/></span><br/>
+                <span><small>63 ratings</small></span>
+              </span>
+            </b-card>
+          </span>
+          <span v-else-if="component.type === 'cardtoggle'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-card :class="[data[component.model+dataIndex] === component.value?'card-toggle-selected':'']" @click="cardToggleClick(component, dataIndex)" style="text-align: center;">
+              <i :class="[component.icon]" style="font-size: 4vw;"></i><br/><br/>
+              <p class="card-text">
+                <span style="font-weight: bold;">{{component.title | translate}}</span><br/>
+                {{component.text | translate}}
+              </p>
+            </b-card>
+          </span>
+          <span v-else-if="component.type === 'cardswitch'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-card style="text-align: center;">
+              <i :class="[component.icon]" style="font-size: 4vw;;"></i><br/><br/>
+              <p class="card-text">
+                <span style="font-weight: bold;">{{component.title | translate}}</span><br/><br/>
+                <toggle-button v-model="data[component.model+dataIndex]" :height="30" :color="{checked: '#ffc928', unchecked: '#ffffff'}"/>
+              </p>
+            </b-card>
+          </span>
+          <span v-else-if="component.type === 'calendar'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <vue-event-calendar :events="demoEvents"></vue-event-calendar>
+          </span>
+          <span v-else-if="component.type === 'linechart'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <chartjs-line></chartjs-line>
+          </span>
+          <span v-else-if="component.type === 'barchart'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <chartjs-bar></chartjs-bar>
           </span>
           <!-- Complex Component -->
           <span v-else-if="component.type === 'mapPicker'" :key="indexCell">
@@ -101,7 +194,77 @@
               :center="{lat:-6.2152408, lng:106.8301251}"
               :zoom="12"
               map-type-id="hybrid"
-              style="width: 100%; height: 300px"
+              :style="[component.style, component.style == null || component.style.width == null ? {width: '100%'}:null, component.style == null || component.style.height == null ? {height: '300px'}:null]"
+              :options="{
+                fullscreenControl: false,
+                mapTypeControl: false,
+                zoomControl: true,
+                zoomControlOptions: {
+                  position: 9
+                },
+                rotateControl: false,
+                scaleControl: true,
+                scaleControlOptions: {
+                  position: 12
+                },
+                streetViewControl: false,
+                backgroundColor: 'grey',
+                scrollwheel: false
+              }"
+              :key="indexCell">
+              <gmap-marker
+                v-if="stringToLatlng(data[component.model])"
+                :position="stringToLatlng(data[component.model])"
+              ></gmap-marker>
+            </gmap-map>
+          </span>
+          <span v-else-if="component.type === 'mapLineArray'" :key="indexCell">
+            <gmap-map
+              :ref="component.id"
+              :center="{lat:-6.2152408, lng:106.8301251}"
+              :zoom="12"
+              map-type-id="hybrid"
+              :style="[component.style, component.style == null || component.style.width == null ? {width: '100%'}:null, component.style == null || component.style.height == null ? {height: '300px'}:null]"
+              :options="{
+                fullscreenControl: false,
+                mapTypeControl: false,
+                zoomControl: true,
+                zoomControlOptions: {
+                  position: 9
+                },
+                rotateControl: false,
+                scaleControl: true,
+                scaleControlOptions: {
+                  position: 12
+                },
+                streetViewControl: false,
+                backgroundColor: 'grey',
+                scrollwheel: false
+              }"
+              :key="indexCell">
+              <gmap-marker
+                v-for="indexPart in data[component.modelCount]" v-if="data[component.modelFrom + '_' + indexPart] && stringToLatlng(data[component.modelFrom + '_' + indexPart].latLng)"
+                :position="stringToLatlng(data[component.modelFrom + '_' + indexPart].latLng)"
+                 :key="indexPart"
+              ></gmap-marker>
+              <gmap-marker
+                v-for="indexPart in data[component.modelCount]" v-if="data[component.modelTo + '_' + indexPart] && stringToLatlng(data[component.modelTo + '_' + indexPart].latLng)"
+                :position="stringToLatlng(data[component.modelTo + '_' + indexPart].latLng)"
+                 :key="indexPart"
+              ></gmap-marker>
+              <gmap-polyline v-for="indexPart in data[component.modelCount]" 
+               v-if="data[component.modelFrom + '_' + indexPart] && stringToLatlng(data[component.modelFrom + '_' + indexPart].latLng) && data[component.modelTo + '_' + indexPart] && stringToLatlng(data[component.modelTo + '_' + indexPart].latLng)"
+              :path="[stringToLatlng(data[component.modelFrom + '_' + indexPart].latLng),stringToLatlng(data[component.modelTo + '_' + indexPart].latLng)]" :key="indexPart">
+              </gmap-polyline>
+            </gmap-map>
+          </span>
+          <span v-else-if="component.type === 'mapArray'" :key="indexCell">
+            <gmap-map
+              :ref="component.id"
+              :center="{lat:-6.2152408, lng:106.8301251}"
+              :zoom="12"
+              map-type-id="hybrid"
+              :style="[component.style, component.style == null || component.style.width == null ? {width: '100%'}:null, component.style == null || component.style.height == null ? {height: '300px'}:null]"
               :options="{
                 fullscreenControl: false,
                 mapTypeControl: false,
@@ -139,21 +302,32 @@
                 <h6 class="text-center" :key="field.key">{{data.label | translate}}</h6>
                 <input v-if="field.filter" type="text" @click.stop=";" v-model="filter[component.id][field.key]" @keyup="filterTyped(component)" :key="field.key" style="width: 100%;"/>
               </template>
+              <template v-for="field in fields[component.id]" :slot="field.key" v-if="field.key != 'actions'" slot-scope="data">
+                {{data.value}}
+              </template>
               <template slot="HEAD_actions" v-if="component.actions != undefined" slot-scope="data">
                 <h6 class="text-center">{{data.label | translate}}</h6>
               </template>
               <template slot="actions" v-if="component.actions != undefined" slot-scope="row">
-                <b-button v-for="(action, index) in component.actions" :key="index" v-if="action.ifCondition ? evaluateString(action.ifCondition, component, data, row.item, row.index) : true" size="sm" @click.stop="rowActionClick(row.item, row.index, component, action)" class="row-action-button">
-                  <i v-if="action.icon" :class="[action.icon]"></i>{{action.text | translate}}
-                </b-button>
+                <template v-for="(action, index) in component.actions" v-if="action.ifCondition ? evaluateString(action.ifCondition, component, data, row.item, row.index) : true">
+                  <toggle-button @change="rowActionClick(row.item, row.index, component, action)" :height="30" :color="{checked: '#ffc928', unchecked: '#ffffff'}" v-if="action.component && action.component === 'switch'" :id="component.id" v-model="row.item[action.model]" :style="component.style" :key="index"/>
+                  <b-button v-else size="sm" @click.stop="rowActionClick(row.item, row.index, component, action)" class="row-action-button" :key="index">
+                    <i v-if="action.icon" :class="[action.icon]"></i>{{action.text | translate}}
+                  </b-button>
+                </template>
               </template>
             </b-table>
             <b-pagination :total-rows="totalRows[component.id]" :per-page="perPage[component.id]" v-model="currentPage[component.id]" align="center"/>
+          </span>
+          <span v-else :key="indexCell">
+            &nbsp;
           </span>
           <!-- Validation Addon -->
           <b-form-invalid-feedback v-if="component.validation" tag="span" :force-show="errors.has(component.model)" :key="indexCell">
             {{ errors.first(component.model) }}
           </b-form-invalid-feedback>
+          <!-- space between component in group -->
+          {{cellComponent.isGroup?'&nbsp;':''}}
         </template>
       </div>
     </div>
@@ -166,12 +340,14 @@ import moment from 'moment'
 import { mapMutations } from 'vuex'
 import { SHOW_ALERT, SELECT_LOCATION } from '../store/mutation-types'
 import bCard from 'bootstrap-vue/es/components/card/card'
+import CalendarPanel from 'vue2-datepicker/datepicker/calendar-panel.vue'
 import api from '../api/common'
 
 export default {
   name: 'generic-container',
   components: {
-    card: bCard
+    card: bCard,
+    CalendarPanel
   },
   props: {
     isRoot: {
@@ -189,7 +365,7 @@ export default {
       required: false,
       default: () => {
         return {
-          viewAs: 'card'
+          viewAs: 'div'
         }
       }
     },
@@ -223,7 +399,18 @@ export default {
       perPage: {},
       totalRows: {},
       rowComponentList: [],
-      place: {}
+      place: {},
+      demoEvents: [
+        {
+          date: '2018/01/10',
+          title: 'Foo'
+        }, {
+          date: '2017/12/20',
+          title: 'Bar',
+          desc: 'description',
+          customClass: 'disabled highlight'
+        }
+      ]
     }
   },
   computed: {
@@ -275,8 +462,9 @@ export default {
                 for (let i = 0; i < tokenListCrit.length; i++) {
                   let tokenCrit = tokenListCrit[i].split(';')
                   let critKey = tokenCrit[0]
+                  let critOps = tokenCrit[1]
                   let critVal = tokenCrit[2]
-                  filterCrit[critKey] = critVal
+                  filterCrit[critKey] = critOps + ':' + critVal
                 }
                 Vue.set(this.filter, component.id, filterCrit)
               } else {
@@ -294,6 +482,15 @@ export default {
               if (field.type === 'date') {
                 field.formatter = (value, key, item) => {
                   let format = 'YYYY-MM-DD'
+                  if (field.format) format = field.format
+                  let utcTime = moment.utc(getObjectFromString(item, key), 'x')
+                  // momentjs is mutable, doing moment.utc(value, 'x').local() will change all
+                  let localTime = moment(utcTime).local()
+                  return localTime.format(format)
+                }
+              } else if (field.type === 'datetime') {
+                field.formatter = (value, key, item) => {
+                  let format = 'YYYY-MM-DD h:mm:ss'
                   if (field.format) format = field.format
                   let utcTime = moment.utc(getObjectFromString(item, key), 'x')
                   // momentjs is mutable, doing moment.utc(value, 'x').local() will change all
@@ -358,19 +555,23 @@ export default {
               this.fields[component.id].splice(this.fields[component.id].length, 1, field)
             }
             this.fields[component.id].splice(this.fields[component.id].length, 1, { key: 'actions', label: 'Actions' })
-          } else if (component.type === 'map') {
-            this.shared.mapComponent.push(component)
+          }
+          // if component is map (needed because the map will need to be refreshed if hidden intially)
+          // or has ref which means will likely get refered from other then put it on shared components stack
+          if (component.ref || component.type === 'map' || component.type === 'mapLineArray' || component.type === 'mapArray') {
+            this.shared.components.push(component)
           }
         }
       }
     }
-    // set map bound
     this.$nextTick(() => {
       // Code that will run only after the entire view and child has been rendered
       // scan all map component and fitbounds the marker on each map
-      for (let i = 0; i < this.shared.mapComponent.length; i++) {
-        let mapComp = this.shared.mapComponent[i]
-        this.refreshMap(mapComp)
+      for (let i = 0; i < this.shared.components.length; i++) {
+        let comp = this.shared.components[i]
+        if (comp.type === 'map' || comp.type === 'mapLineArray' || comp.type === 'mapArray') {
+          this.refreshMap(comp)
+        }
       }
     })
   },
@@ -390,28 +591,50 @@ export default {
       for (var key in filter) {
         if (filter.hasOwnProperty(key) && filter[key] != null && filter[key].length > 0) {
           hasFilter = true
+          let filterVal = filter[key]
+          let filterOperator = 'filter'
+          let pos = filterVal.indexOf(':')
+          if (pos > -1) {
+            filterOperator = filterVal.substr(0, pos)
+            filterVal = filterVal.substr(pos + 1)
+          }
           if (filterCrit.length === 0) {
-            filterCrit = key + ';filter;' + filter[key]
+            filterCrit = key + ';' + filterOperator + ';' + filterVal
           } else {
-            filterCrit = filterCrit + ',' + key + ';filter;' + filter[key]
+            filterCrit = filterCrit + ',' + key + ';' + filterOperator + ';' + filterVal
           }
         }
       }
       if (hasFilter) {
         params = params + '&criteria=' + filterCrit
       }
-      api.get(
-        'generic/class/findAllWithTotal/' + apiUrl + params,
-        (response) => {
-          let dataMap = response.data
-          this.totalRows[compId] = dataMap.totalRows
-          callback(dataMap.list)
-        },
-        () => {
-          this.totalRows[compId] = 0
-          callback(empty)
-        }
-      )
+      if (apiUrl.startsWith('@')) {
+        api.post(
+          apiUrl.substr(1) + params, {},
+          (response) => {
+            let dataMap = response.data
+            this.totalRows[compId] = dataMap.totalRows
+            callback(dataMap.list)
+          },
+          () => {
+            this.totalRows[compId] = 0
+            callback(empty)
+          }
+        )
+      } else {
+        api.get(
+          'generic/class/findAllWithTotal/' + apiUrl + params,
+          (response) => {
+            let dataMap = response.data
+            this.totalRows[compId] = dataMap.totalRows
+            callback(dataMap.list)
+          },
+          () => {
+            this.totalRows[compId] = 0
+            callback(empty)
+          }
+        )
+      }
       // Must return null or undefined to signal b-table that callback is being used
       return null
     },
@@ -425,7 +648,7 @@ export default {
       this.processAction(action, component, null, null, this.$route.query)
     },
     processAction (action, component, item, index, urlParam) {
-      let mapInject = {item: item, urlParam: urlParam, index: index, component: component, action: action}
+      let mapInject = {data: this.data, item: item, urlParam: urlParam, index: index, component: component, action: action}
       let url = stringInject(action.url, mapInject)
       switch (action.type) {
         case 'getData':
@@ -481,7 +704,7 @@ export default {
       }
     },
     execForm (action, component, item, index, urlParam) {
-      let mapInject = {item: item, urlParam: urlParam, index: index, component: component, action: action}
+      let mapInject = {data: this.data, item: item, urlParam: urlParam, index: index, component: component, action: action}
       let url = stringInject(action.url, mapInject)
       let payload = {}
       if (action.data) {
@@ -499,21 +722,32 @@ export default {
         case 'post':
           api.post(url, payload,
             (response) => {
-              this.showAlert({
-                alertType: 'info',
-                alertTitle: 'Success',
-                alertMessage: 'Data Successfully Submitted',
-                okCallback: () => {
-                  if (action.redirect) {
-                    this.$router.push({ path: action.redirect })
-                  } else if (action.goback) {
-                    this.$router.go(-1)
-                  }
-                  if (component.type === 'table') {
-                    this.$refs[component.id][0].refresh()
-                  }
+              if (action.noAlert) {
+                if (action.redirect) {
+                  this.$router.push({ path: action.redirect })
+                } else if (action.goback) {
+                  this.$router.go(-1)
                 }
-              })
+                if (component.type === 'table') {
+                  this.$refs[component.id][0].refresh()
+                }
+              } else {
+                this.showAlert({
+                  alertType: 'info',
+                  alertTitle: 'Success',
+                  alertMessage: 'Data Successfully Submitted',
+                  okCallback: () => {
+                    if (action.redirect) {
+                      this.$router.push({ path: action.redirect })
+                    } else if (action.goback) {
+                      this.$router.go(-1)
+                    }
+                    if (component.type === 'table') {
+                      this.$refs[component.id][0].refresh()
+                    }
+                  }
+                })
+              }
             },
             () => {
               console.log('ERROR button click' + component.type + '-' + component.text)
@@ -523,21 +757,32 @@ export default {
         case 'put':
           api.put(url, payload,
             (response) => {
-              this.showAlert({
-                alertType: 'info',
-                alertTitle: 'Success',
-                alertMessage: 'Data Successfully Submitted',
-                okCallback: () => {
-                  if (action.redirect) {
-                    this.$router.push({ path: action.redirect })
-                  } else if (action.goback) {
-                    this.$router.go(-1)
-                  }
-                  if (component.type === 'table') {
-                    this.$refs[component.id][0].refresh()
-                  }
+              if (action.noAlert) {
+                if (action.redirect) {
+                  this.$router.push({ path: action.redirect })
+                } else if (action.goback) {
+                  this.$router.go(-1)
                 }
-              })
+                if (component.type === 'table') {
+                  this.$refs[component.id][0].refresh()
+                }
+              } else {
+                this.showAlert({
+                  alertType: 'info',
+                  alertTitle: 'Success',
+                  alertMessage: 'Data Successfully Submitted',
+                  okCallback: () => {
+                    if (action.redirect) {
+                      this.$router.push({ path: action.redirect })
+                    } else if (action.goback) {
+                      this.$router.go(-1)
+                    }
+                    if (component.type === 'table') {
+                      this.$refs[component.id][0].refresh()
+                    }
+                  }
+                })
+              }
             },
             () => {
               console.log('ERROR button click' + component.type + '-' + component.text)
@@ -557,23 +802,36 @@ export default {
           )
           break
         case 'delete':
-          this.showAlert({
-            alertType: 'yesNo',
-            alertTitle: 'Are you sure ?',
-            alertMessage: 'Once deleted, you will not be able to recover the data',
-            okCallback: () => {
-              api.delete(
-                url,
-                (response) => {
-                  if (component.type === 'table') {
-                    this.$refs[component.id][0].refresh()
-                  }
-                },
-                () => {
+          if (action.noAlert) {
+            api.delete(
+              url,
+              (response) => {
+                if (component.type === 'table') {
+                  this.$refs[component.id][0].refresh()
                 }
-              )
-            }
-          })
+              },
+              () => {
+              }
+            )
+          } else {
+            this.showAlert({
+              alertType: 'yesNo',
+              alertTitle: 'Are you sure ?',
+              alertMessage: 'Once deleted, you will not be able to recover the data',
+              okCallback: () => {
+                api.delete(
+                  url,
+                  (response) => {
+                    if (component.type === 'table') {
+                      this.$refs[component.id][0].refresh()
+                    }
+                  },
+                  () => {
+                  }
+                )
+              }
+            })
+          }
           break
       }
     },
@@ -588,11 +846,18 @@ export default {
     },
     dropdownInput (model, component, value) {
       let option = this.options[component.source.model]
+      this.dump(option)
       if (option) {
         for (let i = 0; i < option.length; i++) {
           if (option[i].value === value) {
-            this.data[model] = option[i]
+            Vue.set(this.data, model, option[i])
             break
+          }
+        }
+        if (component.refreshId) {
+          let comp = this.findRefComponent(component.refreshId)
+          if (comp.type === 'map' || comp.type === 'mapLineArray') {
+            this.refreshMap(comp)
           }
         }
       }
@@ -601,15 +866,20 @@ export default {
       return value
     },
     checkboxInput (model, component, value) {
-      if (value) this.data[model] = value
+      if (value) Vue.set(this.data, model, value)
     },
     labelValue (component) {
       let result = component.text ? component.text : (component.model ? getObjectFromString(this.data, component.model) : '')
       return result
     },
-    getObjectFromString (key) {
+    switchChanged (action, component, item, itemIndex) {
+      this.processAction(action, component, item, itemIndex, this.$route.query)
+    },
+    getObjectFromString (key, defaultValue) {
       let result = getObjectFromString(this.data, key)
-      if (result instanceof Array) {
+      if (result === null) {
+        return defaultValue
+      } else if (result instanceof Array) {
         return result.join(', ')
       } else {
         return result
@@ -628,14 +898,7 @@ export default {
     mapPickerClick (model, component) {
       let locationStr = this.data[model]
       let locationPicked = this.stringToLatlng(locationStr)
-      let mapComp = null
-      for (let i = 0; i < this.shared.mapComponent.length; i++) {
-        let mapCompCheck = this.shared.mapComponent[i]
-        if (mapCompCheck.id === component.mapId) {
-          mapComp = mapCompCheck
-          break
-        }
-      }
+      let mapComp = this.findRefComponent(component.refreshId)
       let instance = this
       this.selectMapLocation({
         latlng: locationPicked,
@@ -644,6 +907,17 @@ export default {
           instance.refreshMap(mapComp)
         }
       })
+    },
+    findRefComponent (id) {
+      let refComp = null
+      for (let i = 0; i < this.shared.components.length; i++) {
+        let compCheck = this.shared.components[i]
+        if (compCheck.id === id) {
+          refComp = compCheck
+          break
+        }
+      }
+      return refComp
     },
     stringToLatlng (locationStr) {
       let locationPicked = null
@@ -660,6 +934,7 @@ export default {
       return locationPicked
     },
     refreshMap (mapComp) {
+      console.log('---refresh map : ' + mapComp.id)
       let refMap = this.$refs[mapComp.id]
       if (refMap) {
         Object.assign(this.shared.refs, this.$refs)
@@ -667,28 +942,51 @@ export default {
         refMap = this.shared.refs[mapComp.id]
       }
       if (refMap && refMap[0]) {
+        console.log('ref found!!')
         let markerList = []
-        for (let idx = 1; idx <= this.data[mapComp.modelCount]; idx++) {
-          if (this.data[mapComp.model + '_' + idx]) {
-            markerList.push(this.stringToLatlng(this.data[mapComp.model + '_' + idx]))
+        if (mapComp.type === 'map') {
+          markerList.push(this.stringToLatlng(this.data[mapComp.model]))
+        } else if (mapComp.type === 'mapArray') {
+          for (let idx = 1; idx <= this.data[mapComp.modelCount]; idx++) {
+            if (this.data[mapComp.model + '_' + idx]) {
+              markerList.push(this.stringToLatlng(this.data[mapComp.model + '_' + idx]))
+            }
+          }
+        } else if (mapComp.type === 'mapLineArray') {
+          for (let idx = 1; idx <= this.data[mapComp.modelCount]; idx++) {
+            if (this.data[mapComp.modelFrom + '_' + idx]) {
+              markerList.push(this.stringToLatlng(this.data[mapComp.modelFrom + '_' + idx].latLng))
+            }
+            if (this.data[mapComp.modelTo + '_' + idx]) {
+              markerList.push(this.stringToLatlng(this.data[mapComp.modelTo + '_' + idx].latLng))
+            }
           }
         }
         refMap[0].$mapCreated.then(() => {
+          console.log(markerList)
           let bounds = new window.google.maps.LatLngBounds()
           for (let idx = 0; idx < markerList.length; idx++) {
+            if (markerList[idx] == null) continue
             var myLatLng = new window.google.maps.LatLng({ lat: markerList[idx].lat, lng: markerList[idx].lng })
             bounds.extend(myLatLng)
           }
           refMap[0].fitBounds(bounds)
+          Vue.$gmapDefaultResizeBus.$emit('resize')
         })
       }
+    },
+    cardToggleClick (component, dataIndex) {
+      Vue.set(this.data, component.model + dataIndex, component.value)
     },
     ...mapMutations({
       showAlert: SHOW_ALERT
     }),
     ...mapMutations({
       selectMapLocation: SELECT_LOCATION
-    })
+    }),
+    dump (obj) {
+      return obj
+    }
   }
 }
 
@@ -729,7 +1027,7 @@ function orderComponentList (componentList) {
           component.isGroup = true
           rowMap[row][i] = component
         } else {
-          rowMap[row][i] = { isGroup: false, col: component.col, width: component.width, row: component.row, offset: component.offset, align: component.align, noPadding: component.noPadding, content: [component] }
+          rowMap[row][i] = { isGroup: false, ifCondition: component.ifCondition, col: component.col, width: component.width, row: component.row, offset: component.offset, align: component.align, noPadding: component.noPadding, content: [component] }
         }
       }
     }

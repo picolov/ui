@@ -1,6 +1,6 @@
 <template>
   <div class="sidebar-header">
-    <b-img-lazy id="img-avatar" :src="user ? (user.userProfile ? user.userProfile.photo : '') : ''" rounded="circle" width="100px" height="100px" />
+    <b-img-lazy id="img-avatar" :src="user ? (user.userProfile && user.userProfile.photo ? user.userProfile.photo : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8Vw8AAmEBb87E6jIAAAAASUVORK5CYII=') : ''" rounded="circle" width="100px" height="100px" />
     <div style="padding-bottom: 0.5em;">
       <strong>{{user ? (user.userProfile ? user.userProfile.displayName : user.login) : ''}}</strong>
     </div>

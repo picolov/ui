@@ -65,7 +65,8 @@ export default {
       data: {},
       shared: {
         refs: {},
-        mapComponent: []
+        components: [],
+        refreshArray: []
       },
       locationSearch: '',
       locationPicked: {lat: 0, lng: 0}
@@ -113,6 +114,11 @@ export default {
       this.componentList = null
       // reset data
       this.data = {}
+      this.shared = {
+        refs: {},
+        components: [],
+        refreshArray: []
+      }
       // load language
       this.$store.dispatch('loadLang', {page: this.$route.params.page, instance: this})
       // load layout
@@ -132,9 +138,9 @@ export default {
             for (let i = 0; i < page.init.length; i++) {
               let action = page.init[i]
               let mapInject = {item: null, urlParam: this.$route.query, index: null, component: null, action: action}
-              let url = stringInject(action.url, mapInject)
               switch (action.type) {
                 case 'getData':
+                  let url = stringInject(action.url, mapInject)
                   if (action.method && action.method === 'post') {
                     api.post(url, {},
                       (response) => {
@@ -164,6 +170,13 @@ export default {
                       }
                     )
                   }
+                  break
+                case 'initData':
+                  for (let key in action.keyVal) {
+                    Vue.set(this.data, key, action.keyVal[key])
+                  }
+                  this.componentList = page.content
+                  this.attr = page
                   break
               }
             }

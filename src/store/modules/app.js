@@ -54,8 +54,6 @@ const mutations = {
     state.mapPickerAlertShow = alertIsShow
   },
   [types.SELECT_LOCATION] (state, {latlng, selectLocationCallback}) {
-    console.log('select location ----------------<<<<')
-    console.log(latlng)
     state.mapPickerAlertShow = true
     if (latlng) {
       state.locationPicked.lat = latlng.lat
