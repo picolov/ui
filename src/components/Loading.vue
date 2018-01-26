@@ -129,20 +129,26 @@ export default {
     // Register eventBus methods.
     registerBusMethods () {
       this.eventBus.$on(this.eventShow, payload => {
-        this.progress.push(payload.key)
+        if (Array.isArray(payload.key)) {
+          payload.key.forEach((value, index) => { this.progress.push(value) })
+        } else {
+          this.progress.push(payload.key)
+        }
 
         this.showMe()
       })
       this.eventBus.$on(this.eventHide, payload => {
         if (Array.isArray(payload.key)) {
-          payload.key.forEach((value, index) => {
+          payload.key.forEach((value, i) => {
+            let index = this.progress.indexOf(value)
             if (this.progress.indexOf(value) > -1) {
-              this.progress.pop(value)
+              this.progress.splice(index, 1)
             }
           })
         } else {
-          if (this.progress.indexOf(payload.key) > -1) {
-            this.progress.pop(payload.key)
+          let index = this.progress.indexOf(payload.key)
+          if (index > -1) {
+            this.progress.splice(index, 1)
           }
         }
 
@@ -174,10 +180,10 @@ export default {
 }
 
 .loader-wrapper {
-  position: absolute;
-  display: inline-block;
-  right: 10vw;
-  bottom: 10vh;
+  position: relative;
+  margin: auto;
+  width: fit-content;
+  top: 45vh;
 }
 
 .pulled-left {

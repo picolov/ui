@@ -121,10 +121,12 @@ export default {
       }
       // load language
       this.$store.dispatch('loadLang', {page: this.$route.params.page, instance: this})
+      this.$bus.$emit('show-full-loading', { key: 'fetchLayout' })
       // load layout
       api.get(
         'generic/flow/layout/' + this.$route.params.page,
         (response) => {
+          this.$bus.$emit('hide-full-loading', { key: 'fetchLayout' })
           let page = response.data
           if (page.lang) {
             // if from server return map containing lang key, it means that we need to load ekstra language, as the layout is custom
@@ -186,6 +188,7 @@ export default {
           }
         }, () => {
           console.log('ERROR when loading page ' + this.$route.params.page)
+          this.$bus.$emit('hide-full-loading', { key: 'fetchLayout' })
         }
       )
     },

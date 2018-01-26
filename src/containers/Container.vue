@@ -32,7 +32,8 @@
           <span v-else-if="component.type === 'icon'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
               <i :class="[component.icon]" :style="component.style"></i>
           </span>
-          <span v-else-if="component.type === 'hline'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+          <span v-else-if="component.type === 'hline'" :class="[cellComponent.noMargin? 'm-0': null, cellComponent.noPadding? 'p-0': null, cellComponent.width?'col-' + cellComponent.width:'col', cellComponent.offset?'offset-' + cellComponent.offset:null]"
+          :key="indexCell">
             <hr :style="component.style"/>
           </span>
           <span v-else-if="component.type === 'label' && component.text && !component.model" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
@@ -170,6 +171,31 @@
                 <span style="font-weight: bold;">{{component.title | translate}}</span><br/><br/>
                 <toggle-button v-model="data[component.model+dataIndex]" :height="30" :color="{checked: '#ffc928', unchecked: '#ffffff'}"/>
               </p>
+            </b-card>
+          </span>
+          <span v-else-if="component.type === 'card2'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
+            <b-card
+              :header="component.header_title"
+              header-tag="header"
+              :footer="component.footer_title"
+              footer-tag="footer"
+              :title="component.body_title"
+              :bg-variant="component.bg_variant"
+              :text-variant="component.text_variant"
+              :header-bg-variant="component.header_bg_variant"
+              :header-text-variant="component.header_text_variant"
+              :footer-bg-variant="component.footer_bg_variant"
+              :footer-text-variant="component.footer_text_variant"
+            >
+              <div v-if="component.header != undefined" slot="header">
+                <generic-container :id="component.header.id" :components="component.header.content" :attr="component.header" :data="data" :shared="shared" :index-number="indexNumber" :fullwidth="component.header.fullwidth" :style="component.header.style"/>
+              </div>
+              <div v-if="component.body != undefined">
+                <generic-container :id="component.body.id" :components="component.body.content" :attr="component.body" :data="data" :shared="shared" :index-number="indexNumber" :fullwidth="component.body.fullwidth" :style="component.body.style"/>
+              </div>
+              <div v-if="component.footer != undefined" slot="footer">
+                <generic-container :id="component.footer.id" :components="component.footer.content" :attr="component.footer" :data="data" :shared="shared" :index-number="indexNumber" :fullwidth="component.footer.fullwidth" :style="component.footer.style"/>
+              </div>
             </b-card>
           </span>
           <span v-else-if="component.type === 'calendar'" :class="{'float-right':component.h_align==='right'}" :key="indexCell">
