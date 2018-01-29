@@ -32,13 +32,10 @@ export default {
     }
   },
   computed: {
-    name () {
-      return this.$route.name
-    },
     list () {
       return this.$route.matched
     },
-    ...mapState({ name: state => state.app.currPage }),
+    ...mapState({ name: state => state.app.title }),
     ...mapGetters(['filteredMenus'])
   }
 }

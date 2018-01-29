@@ -5,6 +5,7 @@ import * as getters from './getters'
 import user from './modules/user'
 import lang from './modules/lang'
 import app from './modules/app'
+import generic from './modules/generic'
 
 Vue.use(Vuex)
 
@@ -16,7 +17,8 @@ export default new Vuex.Store({
   modules: {
     lang,
     user,
-    app
+    app,
+    generic
   },
   strict: debug,
   plugins: []

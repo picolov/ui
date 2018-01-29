@@ -1,6 +1,6 @@
 <template>
   <div class="animated fadeIn">
-    <a-container v-if="attr !== null" :attr="attr"/>
+    <generic-container v-if="componentList !== null" :name="id" :components="componentList" :attr="attr" :data="data" :shared="shared"/>
     <!-- Modal Component -->
     <b-modal id="info-alert" v-model="infoAlertShow" @ok="okAlertClick" centered :title="alertTitle" :hide-header-close="true" :ok-only="true" :no-close-on-backdrop="true">
       <h3>{{alertMessage}}</h3>
@@ -55,11 +55,20 @@ import api from '../api/common'
 
 export default {
   name: 'genericPage',
-  components: {
-  },
   data () {
     return {
-      attr: null,
+      id: '',
+      componentList: null,
+      attr: {
+        viewAs: 'div'
+      },
+      data: {},
+      shared: {
+        refs: {},
+        components: [],
+        refreshArray: [],
+        filter: {}
+      },
       locationSearch: '',
       locationPicked: {lat: 0, lng: 0},
       path: [],
@@ -119,20 +128,29 @@ export default {
   methods: {
     fetchData () {
       // this is set to be null so that the generic-container will got re-mounted, if not then if will not see that it need to be re-mounted, because changing props doesn't count
-      this.attr = null
-
-      this.$bus.$emit('show-full-loading', { key: 'fetchLayout' })
+      this.componentList = null
+      // reset data
+      this.data = {}
+      this.shared = {
+        refs: {},
+        components: [],
+        refreshArray: [],
+        filter: {}
+      }
+      // load language
+      this.$store.dispatch('loadLang', {page: this.$route.params.page, instance: this})
       // load layout
       api.get(
         'generic/flow/layout/' + this.$route.params.page,
         (response) => {
-          this.$bus.$emit('hide-full-loading', { key: 'fetchLayout' })
           let page = response.data
           if (page.lang) {
+            // if from server return map containing lang key, it means that we need to load ekstra language, as the layout is custom
             this.$store.dispatch('loadLang', {page: page.lang, instance: this})
+            page = page.content
           }
           this.id = page.id
-          if (page.title && page.lang) this.$store.commit(SET_PAGE, {title: page.title, lang: page.lang})
+          if (page.title) this.$store.commit(SET_PAGE, page.title)
           // get init action
           if (page.init && page.init.length > 0) {
             for (let i = 0; i < page.init.length; i++) {
@@ -140,16 +158,18 @@ export default {
               let mapInject = {item: null, urlParam: this.$route.query, index: null, component: null, action: action}
               switch (action.type) {
                 case 'getData':
-                  let url = Vue.$util.stringInject(action.url, mapInject)
+                  let url = stringInject(action.url, mapInject)
                   if (action.method && action.method === 'post') {
                     api.post(url, {},
                       (response) => {
                         for (let key in response.data) {
                           Vue.set(this.data, action.prefix ? action.prefix + '_' + key : key, response.data[key])
                         }
+                        this.componentList = page.content
                         this.attr = page
                       },
                       () => {
+                        this.componentList = page.content
                         this.attr = page
                       }
                     )
@@ -159,9 +179,11 @@ export default {
                         for (let key in response.data) {
                           Vue.set(this.data, action.prefix ? action.prefix + '_' + key : key, response.data[key])
                         }
+                        this.componentList = page.content
                         this.attr = page
                       },
                       () => {
+                        this.componentList = page.content
                         this.attr = page
                       }
                     )
@@ -171,16 +193,17 @@ export default {
                   for (let key in action.keyVal) {
                     Vue.set(this.data, key, action.keyVal[key])
                   }
+                  this.componentList = page.content
                   this.attr = page
                   break
               }
             }
           } else {
+            this.componentList = page.content
             this.attr = page
           }
         }, () => {
           console.log('ERROR when loading page ' + this.$route.params.page)
-          this.$bus.$emit('hide-full-loading', { key: 'fetchLayout' })
         }
       )
     },
@@ -243,7 +266,48 @@ export default {
     })
   }
 }
+
+function stringInject (str, data) {
+  if (typeof str === 'string' && (data instanceof Array)) {
+    return str.replace(/({\d})/g, function (i) {
+      return data[i.replace(/{/, '').replace(/}/, '')]
+    })
+  } else if (typeof str === 'string' && (data instanceof Object)) {
+    for (let key in data) {
+      return str.replace(/({([^}]+)})/g, function (i) {
+        let key = i.replace(/{/, '').replace(/}/, '')
+        let result = getObjectFromString(data, key)
+        if (result === null) {
+          return i
+        }
+        return result
+      })
+    }
+  } else {
+    return false
+  }
+}
+
+function getObjectFromString (data, key) {
+  let tokenArr = key.split('.')
+  let result = null
+  for (let i = 0; i < tokenArr.length; i++) {
+    let token = tokenArr[i]
+    if (result === null) {
+      if (data.hasOwnProperty(token)) {
+        result = data[token]
+      } else {
+        break
+      }
+    } else if (result.hasOwnProperty(token)) {
+      result = result[token]
+    } else {
+      break
+    }
+  }
+  return result
+}
 </script>
 
-<style scoped>
+<style lang="css">
 </style>

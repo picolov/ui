@@ -2,10 +2,12 @@ import * as types from '../mutation-types'
 
 // initial state
 const state = {
-  currPage: '',
+  editMode: true,
+  title: '',
+  pageLang: '',
   alertTitle: '',
   alertMessage: '',
-  locationPicked: {lat: -6.2152408, lng: 106.8301251},
+  path: [],
   infoAlertShow: false,
   yesNoAlertShow: false,
   mapPickerAlertShow: false,
@@ -15,7 +17,6 @@ const state = {
 
 // getters
 const getters = {
-  currPage: state => state.currPage
 }
 
 // actions
@@ -24,8 +25,15 @@ const actions = {
 
 // mutations
 const mutations = {
-  [types.SET_PAGE] (state, currPage) {
-    state.currPage = currPage
+  [types.ENABLE_EDIT_MODE] (state) {
+    state.editMode = true
+  },
+  [types.DISABLE_EDIT_MODE] (state) {
+    state.editMode = false
+  },
+  [types.SET_PAGE] (state, {title, lang}) {
+    state.title = title
+    state.pageLang = lang
   },
   [types.SHOW_ALERT] (state, {alertType, alertTitle, alertMessage, okCallback}) {
     state.alertTitle = alertTitle
@@ -53,14 +61,12 @@ const mutations = {
   [types.SET_MAPPICKER_SHOW] (state, {alertIsShow}) {
     state.mapPickerAlertShow = alertIsShow
   },
-  [types.SELECT_LOCATION] (state, {latlng, selectLocationCallback}) {
+  [types.SELECT_LOCATION] (state, {path, selectLocationCallback}) {
     state.mapPickerAlertShow = true
-    if (latlng) {
-      state.locationPicked.lat = latlng.lat
-      state.locationPicked.lng = latlng.lng
+    if (path) {
+      state.path = path
     } else {
-      state.locationPicked.lat = -6.2152408
-      state.locationPicked.lng = 106.8301251
+      state.path = []
     }
     state.selectLocationCallback = selectLocationCallback
   }

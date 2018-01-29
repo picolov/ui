@@ -1,5 +1,3 @@
-// The Vue build version to load with the `import` command
-// (runtime-only or standalone) has been set in webpack.base.conf with an alias.
 import Vue from 'vue'
 import vuexI18n from 'vuex-i18n'
 import BootstrapVue from 'bootstrap-vue'
@@ -12,12 +10,21 @@ import vueEventCalendar from 'vue-event-calendar'
 import 'chart.js'
 import 'hchs-vue-charts'
 import vSelect from 'vue-select'
+import underscore from 'vue-underscore'
+import UtilityClass from './utility.js'
 import App from './App'
 import store from './store'
 import router from './router'
 import { VeeValidate, VeeConfig } from './validation'
 import FileUploadBase64 from './components/FileUploadBase64'
-import GenericContainer from './containers/Container'
+import ALabel from './components/ALabel'
+import AButton from './components/AButton'
+import AInputText from './components/AInputText'
+import ATable from './components/ATable'
+import ADatePicker from './components/ADatePicker'
+
+import AContainer from './containers/AContainer'
+import AStackContainer from './containers/AStackContainer'
 import GenericTabs from './containers/Tabs'
 import GenericMultiStep from './containers/MultiStep'
 
@@ -28,23 +35,27 @@ Vue.use(BootstrapVue)
 Vue.use(DatePicker)
 Vue.use(VueFormWizard)
 Vue.use(ToggleButton)
-Vue.use(VueGoogleMaps, {
-  load: {
-    key: 'AIzaSyAf19UCebSUpJcNp9U0T6zz10GqY4dNlfc',
-    libraries: 'places' // If you need to use place input
-  }
-})
-Vue.use(vueEventCalendar, {locale: 'en', color: '#ffc928'})
+Vue.use(VueGoogleMaps, { load: { key: 'AIzaSyAf19UCebSUpJcNp9U0T6zz10GqY4dNlfc', libraries: 'places' } })
+Vue.use(vueEventCalendar, { locale: 'en', color: '#ffc928' })
 Vue.use(window.VueCharts)
+Vue.use(UtilityClass)
+Vue.use(underscore)
 
 // set the start locale to use
 Vue.i18n.set('en')
 Vue.use(VeeValidate, VeeConfig)
+
 // internal component
-Vue.component('generic-container', GenericContainer)
+Vue.component('a-container', AContainer)
+Vue.component('a-stackContainer', AStackContainer)
 Vue.component('generic-tabs', GenericTabs)
 Vue.component('generic-multistep', GenericMultiStep)
 Vue.component('generic-filebase64', FileUploadBase64)
+Vue.component('a-label', ALabel)
+Vue.component('a-button', AButton)
+Vue.component('a-inputText', AInputText)
+Vue.component('a-table', ATable)
+Vue.component('a-datePicker', ADatePicker)
 // external component
 Vue.component('v-select', vSelect)
 
@@ -75,5 +86,3 @@ new Vue({
     App
   }
 })
-
-/* utility function */

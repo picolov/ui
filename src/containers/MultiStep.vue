@@ -71,17 +71,18 @@ export default {
     },
     onChange (prevIdx, nextIdx) {
       let component = this.components[nextIdx]
-      console.log('This is called on change - ' + component.id)
-      // eslint-disable-next-line no-unused-vars
-      let data = this.data
-      // eslint-disable-next-line no-unused-vars
-      let setVar = this.setVar
-      // eslint-disable-next-line no-unused-vars
-      let refreshMap = this.refreshMap
-      console.log('change action : ' + component.changeAction)
-      if (component.changeAction) {
-        // eslint-disable-next-line no-eval
-        eval('(function() {' + component.changeAction + '}())')
+      if (component) {
+        // eslint-disable-next-line no-unused-vars
+        let data = this.data
+        // eslint-disable-next-line no-unused-vars
+        let setVar = this.setVar
+        // eslint-disable-next-line no-unused-vars
+        let refreshMap = this.refreshMap
+        console.log('change action : ' + component.changeAction)
+        if (component.changeAction) {
+          // eslint-disable-next-line no-eval
+          eval('(function() {' + component.changeAction + '}())')
+        }
       }
     },
     beforeTabSwitch: function (component) {
@@ -91,8 +92,7 @@ export default {
       let setVar = this.setVar
       // eslint-disable-next-line no-unused-vars
       let refreshMapId = this.refreshMapId
-      console.log('next action : ' + component.nextAction)
-      if (component.nextAction) {
+      if (component && component.nextAction) {
         // eslint-disable-next-line no-eval
         var result = eval('(function() {' + component.nextAction + '}())')
         return result

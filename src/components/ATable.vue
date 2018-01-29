@@ -1,0 +1,257 @@
+<template>
+  <div>
+    <b-table :ref="attr.id"
+      head-variant="dark"
+      :items="myProvider" 
+      :fields="fields" 
+      :current-page="currentPage"
+      :per-page="perPage"
+      :style="attr.style">
+      <template v-for="field in fields" :slot="'HEAD_' + field.key" v-if="field.key != 'actions'" slot-scope="data">
+        <h6 class="text-center" :key="field.key">{{data.label | translate}}</h6>
+        <input v-if="field.filter" type="text" @click.stop=";" v-model="filter[field.key]" @keyup="filterTyped(attr)" :key="field.key" style="width: 100%;"/>
+      </template>
+      <template v-for="field in fields" :slot="field.key" v-if="field.key != 'actions'" slot-scope="data">
+        {{data.value}}
+      </template>
+      <template slot="HEAD_actions" v-if="attr.actions != undefined" slot-scope="data">
+        <h6 class="text-center">{{data.label | translate}}</h6>
+      </template>
+      <template slot="actions" v-if="attr.actions != undefined" slot-scope="row">
+        <template v-for="(action, index) in attr.actions" v-if="action.ifCondition ? this.$util.evaluateString(action.ifCondition, attr, data, row.item, row.index) : true">
+          <template v-if="action.component && action.component === 'switch'">
+            <toggle-button @change="rowActionClick(row.item, row.index, attr, action)" :height="30" :color="{checked: '#ffc928', unchecked: '#ffffff'}" v-model="row.item[action.model]" :style="attr.style" :key="index" style="margin-right: 0.5em"/>
+          </template>
+          <template v-else>
+            <b-button size="sm" @click.stop="rowActionClick(row.item, row.index, attr, action)" class="row-action-button" :key="index" style="margin-right: 0.5em">
+              <i v-if="action.icon" :class="[action.icon]"></i>{{action.text | translate}}
+            </b-button>
+          </template> 
+        </template>
+      </template>
+    </b-table>
+    <b-pagination :total-rows="totalRows" :per-page="perPage" v-model="currentPage" align="center"/>
+  </div>
+</template>
+
+<script>
+import Vue from 'vue'
+import { UPDATE_DATA, FINISH_REFRESH_COMPONENT } from '../store/mutation-types'
+import moment from 'moment'
+import api from '../api/common'
+// TODO for other component (ex. inputTextFilter) to modify the filter, the component will suplly method to be called with the filter as param
+export default {
+  name: 'a-table',
+  props: {
+    attr: {
+      type: Object,
+      required: true,
+      default: () => {}
+    }
+  },
+  data () {
+    return {
+      filter: {},
+      fields: [],
+      currentPage: 1,
+      perPage: 5,
+      totalRows: 0,
+      options: {}
+    }
+  },
+  computed: {
+    data: {
+      get () {
+        return this.$store.state.generic.data[this.attr.model]
+      },
+      set (value) {
+        this.$store.commit(UPDATE_DATA, {key: this.attr.model, value: value})
+      }
+    },
+    refreshComponentList () {
+      return this.$store.state.generic.componentToRefresh
+    }
+  },
+  watch: {
+    refreshComponentList (newList, oldList) {
+      if (newList.length > 0 && newList.indexOf(this.attr.id) > -1) {
+        this.$refs[this.attr.id].refresh()
+        this.$store.commit(FINISH_REFRESH_COMPONENT, {id: this.attr.id})
+      }
+    }
+  },
+  methods: {
+    myProvider (ctx, callback) {
+      let empty = []
+      let params = '?page=' + (ctx.currentPage - 1) + '&size=' + ctx.perPage
+      if (ctx.sortBy) {
+        params = params + '&sort=' + ctx.sortBy + ';' + (ctx.sortDesc ? 'desc' : 'asc')
+      }
+      let hasFilter = false
+      let filterCrit = ''
+      for (var key in this.filter) {
+        if (this.filter.hasOwnProperty(key) && this.filter[key] != null && this.filter[key].length > 0) {
+          hasFilter = true
+          let filterVal = this.filter[key]
+          let filterOperator = 'filter'
+          let pos = filterVal.indexOf(':')
+          if (pos > -1) {
+            filterOperator = filterVal.substr(0, pos)
+            filterVal = filterVal.substr(pos + 1)
+          }
+          if (filterCrit.length === 0) {
+            filterCrit = key + ';' + filterOperator + ';' + filterVal
+          } else {
+            filterCrit = filterCrit + ',' + key + ';' + filterOperator + ';' + filterVal
+          }
+        }
+      }
+      if (hasFilter) {
+        params = params + '&criteria=' + filterCrit
+      }
+      if (this.attr.method === 'get') {
+        api.get(
+          this.attr.url + params,
+          (response) => {
+            let dataMap = response.data
+            this.totalRows = dataMap.totalRows
+            callback(dataMap.list)
+          },
+          () => {
+            this.totalRows = 0
+            callback(empty)
+          }
+        )
+      } else if (this.attr.method === 'post') {
+        api.post(
+          this.attr.url + params, {},
+          (response) => {
+            let dataMap = response.data
+            this.totalRows = dataMap.totalRows
+            callback(dataMap.list)
+          },
+          () => {
+            this.totalRows = 0
+            callback(empty)
+          }
+        )
+      }
+      // Must return null or undefined to signal b-table that callback is being used
+      return null
+    },
+    rowActionClick (item, index, component, action) {
+      this.$util.processAction(this, action, component, item, index, this.$route.query)
+    },
+    filterTyped (component) {
+      this.$refs[component.id].refresh()
+    }
+  },
+  mounted () {
+    this.filter = {}
+    this.fields = []
+    this.currentPage = 1
+    this.perPage = 5
+    this.totalRows = 0
+    this.options = {}
+    if (this.attr.criteria) {
+      let processedCrit = this.$util.stringInject(this.attr.criteria, this.data)
+      if (processedCrit) {
+        let tokenListCrit = processedCrit.split(',')
+        for (let i = 0; i < tokenListCrit.length; i++) {
+          let tokenCrit = tokenListCrit[i].split(';')
+          let critKey = tokenCrit[0]
+          let critOps = tokenCrit[1]
+          let critVal = tokenCrit[2]
+          this.filter[critKey] = critOps + ':' + critVal
+        }
+      } else {
+      }
+    } else {
+    }
+
+    for (let i = 0; i < this.attr.fields.length; i++) {
+      let field = this.attr.fields[i]
+      // let columnMap = {key: field.key, label: field.label, sortable: field.sortable, class: field.class}
+      if (field.type === 'date') {
+        field.formatter = (value, key, item) => {
+          let format = 'YYYY-MM-DD'
+          if (field.format) format = field.format
+          let utcTime = moment.utc(this.$util.getObjectFromString(item, key), 'x')
+          // momentjs is mutable, doing moment.utc(value, 'x').local() will change all
+          let localTime = moment(utcTime).local()
+          return localTime.format(format)
+        }
+      } else if (field.type === 'datetime') {
+        field.formatter = (value, key, item) => {
+          let format = 'YYYY-MM-DD h:mm:ss'
+          if (field.format) format = field.format
+          let utcTime = moment.utc(this.$util.getObjectFromString(item, key), 'x')
+          // momentjs is mutable, doing moment.utc(value, 'x').local() will change all
+          let localTime = moment(utcTime).local()
+          return localTime.format(format)
+        }
+      } else if (field.type === 'stringlist') {
+        if (field.source) {
+          api.get('generic/class/' + field.source.model,
+            (response) => {
+              let optionList = []
+              for (let i = 0; i < response.data.length; i++) {
+                let option = response.data[i]
+                option.value = option[field.source.value]
+                option.text = option[field.source.text]
+                optionList.push(option)
+              }
+              Vue.set(this.options, field.source.model, optionList)
+            },
+            () => { }
+          )
+        }
+        field.formatter = (value, key, item) => {
+          let val = this.$util.getObjectFromString(item, key)
+          let result = ''
+          if (field.source && val && this.options[field.source.model]) {
+            let option = this.options[field.source.model]
+            let optionMap = {}
+            for (let j = 0; j < option.length; j++) {
+              optionMap[option[j].value] = option[j]
+            }
+            for (let k = 0; k < val.length; k++) {
+              if (result === '') {
+                if (optionMap.hasOwnProperty(val[k])) result += optionMap[val[k]].text
+                else result += '<' + val[k] + '>'
+              } else {
+                if (optionMap.hasOwnProperty(val[k])) result += ', ' + optionMap[val[k]].text
+                else result += ', <' + val[k] + '>'
+              }
+            }
+          } else if (field.data && val) {
+            let option = field.data
+            let optionMap = {}
+            for (let j = 0; j < option.length; j++) {
+              optionMap[option[j].value] = option[j]
+            }
+            for (let k = 0; k < val.length; k++) {
+              if (result === '') {
+                result += optionMap[val[k]].text
+              } else {
+                result += ', ' + optionMap[val[k]].text
+              }
+            }
+          }
+          return result
+        }
+      } else {
+        field.formatter = (value, key, item) => {
+          return this.$util.getObjectFromString(item, key)
+        }
+      }
+      this.fields.splice(this.fields.length, 1, field)
+    }
+    this.fields.splice(this.fields.length, 1, { key: 'actions', label: 'Actions' })
+  }
+}
+</script>
+
+<style scoped>
+</style>
+
