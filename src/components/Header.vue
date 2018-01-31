@@ -21,17 +21,17 @@
         <b-dropdown-item @click="changeLang('en')"><img src="static/img/flags/United-Kingdom.png" alt="id" class="img-flag"></b-dropdown-item>
       </b-nav-item-dropdown>
       <li class="d-md-down-none nav-item">
-        <a href="#" @click="editMode?disableEditMode():enableEditMode()" target="_self" aria-disabled="false" class="nav-link">
+        <a href="javascript:void(0);" @click="editMode?disableEditMode():enableEditMode()" target="_self" aria-disabled="false" class="nav-link">
           <i :class="[editMode?'fa fa-window-restore':'fa fa-wrench']"></i>
         </a>
       </li> 
       <li class="d-md-down-none nav-item">
-        <a href="#" target="_self" aria-disabled="false" class="nav-link">
+        <a href="javascript:void(0);" target="_self" aria-disabled="false" class="nav-link">
           <i class="fa fa-bell"></i>
         </a>
       </li> 
       <li class="d-md-down-none nav-item">
-        <a href="#" @click="logout()" aria-disabled="false" class="nav-link">
+        <a href="javascript:void(0);" @click="logout()" aria-disabled="false" class="nav-link">
           <i class="fa fa-sign-out"></i>
         </a>
       </li>   

@@ -8,7 +8,10 @@
       :is-resizable="editMode"
       :is-mirrored="false"
       :vertical-compact="true"
-      :margin="[0, 0]"
+      :margin="[
+        attr.marginH !== undefined && Number.isInteger(attr.marginH) ? attr.marginH : 0,
+        attr.marginV !== undefined && Number.isInteger(attr.marginV) ? attr.marginV : 0
+      ]"
       :use-css-transforms="true"
       @layout-updated="layoutUpdatedEvent">
         <grid-item v-for="(component, idx) in componentLayout" :key="idx" :style="{'z-index': component.content.zIndex || idx}"
