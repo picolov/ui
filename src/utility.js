@@ -1,9 +1,10 @@
 import { UPDATE_DATA, SHOW_ALERT, REFRESH_COMPONENT } from './store/mutation-types'
+import moment from 'moment'
 import api from './api/common'
 
 export default {
   install: function (Vue) {
-    Object.defineProperty(Vue.prototype, '$util', { value: {stringInject, getObjectFromString, uuid, evaluateString, processAction} })
+    Object.defineProperty(Vue.prototype, '$util', { value: {stringInject, getObjectFromString, uuid, evaluateString, processAction, datetimeToString} })
   }
 }
 
@@ -207,6 +208,15 @@ function execForm (instance, action, component, item, index, urlParam) {
       }
       break
   }
+}
+
+function datetimeToString (datetime, formatParam) {
+  let format = 'YYYY-MM-DD h:mm:ss'
+  if (formatParam) format = formatParam
+  let utcTime = moment.utc(datetime, 'x')
+  // momentjs is mutable, doing moment.utc(value, 'x').local() will change all
+  let localTime = moment(utcTime).local()
+  return localTime.format(format)
 }
 
 function stringInject (str, data) {

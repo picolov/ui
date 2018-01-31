@@ -22,8 +22,10 @@ import AButton from './components/AButton'
 import AInputText from './components/AInputText'
 import ATable from './components/ATable'
 import ADatePicker from './components/ADatePicker'
+import ADropDown from './components/ADropDown'
 
 import AContainer from './containers/AContainer'
+import ACardContainer from './containers/ACardContainer'
 import AStackContainer from './containers/AStackContainer'
 import GenericTabs from './containers/Tabs'
 import GenericMultiStep from './containers/MultiStep'
@@ -47,6 +49,7 @@ Vue.use(VeeValidate, VeeConfig)
 
 // internal component
 Vue.component('a-container', AContainer)
+Vue.component('a-cardContainer', ACardContainer)
 Vue.component('a-stackContainer', AStackContainer)
 Vue.component('generic-tabs', GenericTabs)
 Vue.component('generic-multistep', GenericMultiStep)
@@ -56,6 +59,7 @@ Vue.component('a-button', AButton)
 Vue.component('a-inputText', AInputText)
 Vue.component('a-table', ATable)
 Vue.component('a-datePicker', ADatePicker)
+Vue.component('a-dropDown', ADropDown)
 // external component
 Vue.component('v-select', vSelect)
 

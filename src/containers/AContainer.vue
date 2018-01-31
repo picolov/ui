@@ -1,5 +1,4 @@
 <template>
-  <component :is="attr.viewAs?attr.viewAs:'div'">
     <grid-layout
       class="grid-layout"
       :layout="componentLayout"
@@ -19,14 +18,11 @@
           :w="component.w"
           :h="component.h"
           :i="component.i">
-          <!-- {{'[' + component.x + ',' + component.y + ']'}} -->
-          <!-- <component :is="component.content.type" :attr="component.content"/> -->
           <resizeable>
-            <component :is="component.content.type" :attr="component.content" :data-model="component.content.model"/>
+            <component :is="component.content.type" :attr="component.content" :array-sequence="arraySequence"/>
           </resizeable>
         </grid-item>
     </grid-layout>
-  </component>
 </template>
 
 <script>
@@ -46,6 +42,11 @@ export default {
       type: Object,
       required: true,
       default: () => {}
+    },
+    arraySequence: {
+      type: String,
+      required: false,
+      default: () => ''
     }
   },
   data () {
@@ -59,7 +60,9 @@ export default {
   mounted () {
     for (let i = 0; i < this.attr.content.length; i++) {
       let component = this.attr.content[i]
-      this.componentLayout.push({x: component.col, y: component.row, w: component.width, h: component.height, i: 'c_' + component.id, content: component})
+      if (component.col != null && component.row != null && component.width != null && component.height != null && component.id != null) {
+        this.componentLayout.push({x: component.col, y: component.row, w: component.width, h: component.height, i: 'c_' + component.id, content: component})
+      }
     }
   },
   methods: {

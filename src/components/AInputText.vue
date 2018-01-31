@@ -1,17 +1,17 @@
 <template>
-  <span>
+  <span class="a-inputText">
     <b-form-input 
       :id="attr.id"
       type="text"
-      :name="dataModel"
+      :name="attr.model + arraySequence"
       v-model="data"
       v-validate="!attr.validation ? '' : attr.validation.join('|')"
       :data-vv-as="attr.label | translate"
-      :state="errors.has(dataModel) ? false : null"
+      :state="errors.has(attr.model + arraySequence) ? false : null"
       :style="attr.style"
       :placeholder="attr.placeholder"/>
-    <b-form-invalid-feedback v-if="attr.validation" tag="span" :force-show="errors.has(dataModel)">
-      {{ errors.first(dataModel) }}
+    <b-form-invalid-feedback v-if="attr.validation" tag="span" :force-show="errors.has(attr.model+arraySequence)">
+      {{ errors.first(attr.model + arraySequence) }}
     </b-form-invalid-feedback>
   </span>
 </template>
@@ -27,20 +27,19 @@ export default {
       required: true,
       default: () => {}
     },
-    // model was put here so that we can send model + index for containerArray from parent, without the component itself need to know
-    dataModel: {
+    arraySequence: {
       type: String,
-      required: true,
-      default: () => null
+      required: false,
+      default: () => ''
     }
   },
   computed: {
     data: {
       get () {
-        return this.$store.state.generic.data[this.dataModel]
+        return this.$store.state.generic.data[this.attr.model + this.arraySequence]
       },
       set (value) {
-        this.$store.commit(UPDATE_DATA, {key: this.dataModel, value: value})
+        this.$store.commit(UPDATE_DATA, {key: this.attr.model + this.arraySequence, value: value})
       }
     }
   },
@@ -49,6 +48,8 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss">
+.a-inputText {
+}
 </style>
 

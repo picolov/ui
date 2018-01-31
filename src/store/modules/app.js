@@ -2,7 +2,7 @@ import * as types from '../mutation-types'
 
 // initial state
 const state = {
-  editMode: true,
+  editMode: false,
   title: '',
   pageLang: '',
   alertTitle: '',

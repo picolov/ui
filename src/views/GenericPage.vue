@@ -1,6 +1,6 @@
 <template>
   <div class="animated fadeIn">
-    <a-container v-if="attr !== null" :attr="attr"/>
+    <component v-if="attr !== null" :is="attr.type" :attr="attr"/>
     <!-- Modal Component -->
     <b-modal id="info-alert" v-model="infoAlertShow" @ok="okAlertClick" centered :title="alertTitle" :hide-header-close="true" :ok-only="true" :no-close-on-backdrop="true">
       <h3>{{alertMessage}}</h3>
@@ -47,10 +47,9 @@
 </template>
 
 <script>
-import Vue from 'vue'
 import {_} from 'vue-underscore'
 import { mapState, mapMutations } from 'vuex'
-import { SET_PAGE, SET_ALERT_SHOW, SET_MAPPICKER_SHOW } from '../store/mutation-types'
+import { SET_ALERT_SHOW, SET_MAPPICKER_SHOW, SET_PAGE, UPDATE_DATA_COLLECTION, CLEAR_DATA } from '../store/mutation-types'
 import api from '../api/common'
 
 export default {
@@ -120,7 +119,7 @@ export default {
     fetchData () {
       // this is set to be null so that the generic-container will got re-mounted, if not then if will not see that it need to be re-mounted, because changing props doesn't count
       this.attr = null
-
+      this.$store.commit(CLEAR_DATA)
       this.$bus.$emit('show-full-loading', { key: 'fetchLayout' })
       // load layout
       api.get(
@@ -140,43 +139,37 @@ export default {
               let mapInject = {item: null, urlParam: this.$route.query, index: null, component: null, action: action}
               switch (action.type) {
                 case 'getData':
-                  let url = Vue.$util.stringInject(action.url, mapInject)
+                  let url = this.$util.stringInject(action.url, mapInject)
                   if (action.method && action.method === 'post') {
                     api.post(url, {},
                       (response) => {
-                        for (let key in response.data) {
-                          Vue.set(this.data, action.prefix ? action.prefix + '_' + key : key, response.data[key])
-                        }
-                        this.attr = page
+                        this.$store.commit(UPDATE_DATA_COLLECTION, {collection: response.data, prefix: action.prefix})
+                        this.attr = page.container
                       },
                       () => {
-                        this.attr = page
+                        this.attr = page.container
                       }
                     )
                   } else {
                     api.get(url,
                       (response) => {
-                        for (let key in response.data) {
-                          Vue.set(this.data, action.prefix ? action.prefix + '_' + key : key, response.data[key])
-                        }
-                        this.attr = page
+                        this.$store.commit(UPDATE_DATA_COLLECTION, {collection: response.data, prefix: action.prefix})
+                        this.attr = page.container
                       },
                       () => {
-                        this.attr = page
+                        this.attr = page.container
                       }
                     )
                   }
                   break
                 case 'initData':
-                  for (let key in action.keyVal) {
-                    Vue.set(this.data, key, action.keyVal[key])
-                  }
-                  this.attr = page
+                  this.$store.commit(UPDATE_DATA_COLLECTION, {collection: action.keyVal})
+                  this.attr = page.container
                   break
               }
             }
           } else {
-            this.attr = page
+            this.attr = page.container
           }
         }, () => {
           console.log('ERROR when loading page ' + this.$route.params.page)

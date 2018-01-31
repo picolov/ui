@@ -35,7 +35,6 @@
 </template>
 
 <script>
-import Vue from 'vue'
 import { UPDATE_DATA, FINISH_REFRESH_COMPONENT } from '../store/mutation-types'
 import moment from 'moment'
 import api from '../api/common'
@@ -190,56 +189,6 @@ export default {
           let localTime = moment(utcTime).local()
           return localTime.format(format)
         }
-      } else if (field.type === 'stringlist') {
-        if (field.source) {
-          api.get('generic/class/' + field.source.model,
-            (response) => {
-              let optionList = []
-              for (let i = 0; i < response.data.length; i++) {
-                let option = response.data[i]
-                option.value = option[field.source.value]
-                option.text = option[field.source.text]
-                optionList.push(option)
-              }
-              Vue.set(this.options, field.source.model, optionList)
-            },
-            () => { }
-          )
-        }
-        field.formatter = (value, key, item) => {
-          let val = this.$util.getObjectFromString(item, key)
-          let result = ''
-          if (field.source && val && this.options[field.source.model]) {
-            let option = this.options[field.source.model]
-            let optionMap = {}
-            for (let j = 0; j < option.length; j++) {
-              optionMap[option[j].value] = option[j]
-            }
-            for (let k = 0; k < val.length; k++) {
-              if (result === '') {
-                if (optionMap.hasOwnProperty(val[k])) result += optionMap[val[k]].text
-                else result += '<' + val[k] + '>'
-              } else {
-                if (optionMap.hasOwnProperty(val[k])) result += ', ' + optionMap[val[k]].text
-                else result += ', <' + val[k] + '>'
-              }
-            }
-          } else if (field.data && val) {
-            let option = field.data
-            let optionMap = {}
-            for (let j = 0; j < option.length; j++) {
-              optionMap[option[j].value] = option[j]
-            }
-            for (let k = 0; k < val.length; k++) {
-              if (result === '') {
-                result += optionMap[val[k]].text
-              } else {
-                result += ', ' + optionMap[val[k]].text
-              }
-            }
-          }
-          return result
-        }
       } else {
         field.formatter = (value, key, item) => {
           return this.$util.getObjectFromString(item, key)
@@ -252,6 +201,6 @@ export default {
 }
 </script>
 
-<style scoped>
+<style lang="scss">
 </style>
 

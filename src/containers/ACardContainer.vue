@@ -1,18 +1,13 @@
 <template>
-  <div>
-    <component v-for="(component, idx) in attr.content" 
-      :key="idx" 
-      :is="component.type" 
-      :attr="component"
-      :array-sequence="arraySequence"
-      style="margin-right: 0.5em"/>
-  </div>
+  <b-card>
+    <a-container :attr="attr" :array-sequence="arraySequence"/>
+  </b-card>
 </template>
 
 <script>
 
 export default {
-  name: 'a-stackContainer',
+  name: 'a-cardContainer',
   components: {
   },
   props: {
