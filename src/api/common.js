@@ -51,5 +51,13 @@ export default {
     }).catch((err) => {
       errorCb(err)
     })
+  },
+
+  upload (url, param, config, cb, errorCb) {
+    HTTP.post(url, param, config).then((response) => {
+      cb(response)
+    }).catch((err) => {
+      errorCb(err)
+    })
   }
 }

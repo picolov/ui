@@ -23,6 +23,9 @@ import AInputText from './components/AInputText'
 import ATable from './components/ATable'
 import ADatePicker from './components/ADatePicker'
 import ADropDown from './components/ADropDown'
+import ADropBoxImage from './components/ADropBoxImage'
+import AImageLazy from './components/AImageLazy'
+import AImage from './components/AImage'
 
 import AContainer from './containers/AContainer'
 import ACardContainer from './containers/ACardContainer'
@@ -60,6 +63,9 @@ Vue.component('a-inputText', AInputText)
 Vue.component('a-table', ATable)
 Vue.component('a-datePicker', ADatePicker)
 Vue.component('a-dropDown', ADropDown)
+Vue.component('a-dropBoxImage', ADropBoxImage)
+Vue.component('a-imageLazy', AImageLazy)
+Vue.component('a-image', AImage)
 // external component
 Vue.component('v-select', vSelect)
 
