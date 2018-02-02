@@ -13,7 +13,7 @@ export default {
     const vm = this
     this.gridItem = this.$parent
     this.resizeSensor = new ResizeSensor(this.$el, () => {
-      const widgetHeight = this.$el.clientHeight
+      const widgetHeight = this.$el.scrollHeight
       if (widgetHeight !== vm.widgetHeight) {
         const h = Math.ceil((widgetHeight + vm.gridItem.margin[1]) / (vm.gridItem.rowHeight + vm.gridItem.margin[1]))
         const newH = h
@@ -29,7 +29,22 @@ export default {
         )
       }
     })
-    this.widgetHeight = this.$el.clientHeight
+    this.widgetHeight = this.$el.scrollHeight
+    // initialize grid height to match content height
+    this.$nextTick(() => {
+      if (vm._uid === this._uid) {
+        let h = Math.ceil((this.widgetHeight + vm.gridItem.margin[1]) / (vm.gridItem.rowHeight + vm.gridItem.margin[1]))
+        vm.gridItem.eventBus.$emit(
+          'resizeEvent',
+          'resizeend',
+          vm.gridItem.i,
+          vm.gridItem.x,
+          vm.gridItem.y,
+          h,
+          vm.gridItem.w
+        )
+      }
+    })
   },
   data () {
     return {

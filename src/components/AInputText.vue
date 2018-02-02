@@ -2,7 +2,7 @@
   <span class="a-inputText">
     <b-form-input 
       :id="attr.id"
-      type="text"
+      :type="inputType"
       :name="attr.model + arraySequence"
       v-model="data"
       v-validate="!attr.validation ? '' : attr.validation.join('|')"
@@ -33,6 +33,10 @@ export default {
       default: () => ''
     }
   },
+  data () {
+    return {
+    }
+  },
   computed: {
     data: {
       get () {
@@ -41,7 +45,16 @@ export default {
       set (value) {
         this.$store.commit(UPDATE_DATA, {key: this.attr.model + this.arraySequence, value: value})
       }
+    },
+    inputType () {
+      if (this.attr.format && this.attr.format === 'number') {
+        return 'number'
+      } else {
+        return 'text'
+      }
     }
+  },
+  mounted () {
   },
   methods: {
   }

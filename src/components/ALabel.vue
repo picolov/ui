@@ -1,7 +1,7 @@
 <template>
   <label 
     :id="attr.i" 
-    :style="[attr.style, {margin: 0, height: '40px', paddingTop: '0.5em'}]">
+    :style="[attr.style, {margin: 0, minHeight: '40px', paddingTop: '0.5em'}]">
     {{labelText}} <small v-if="attr.mandatory" class="text-danger">*</small>
   </label>
 </template>
