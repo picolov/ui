@@ -12,13 +12,13 @@
     :footer-bg-variant="attr.footerBgVariant"
     :footer-text-variant="attr.footerTextVariant">
     <div v-if="Array.isArray(attr.headerMenu) && attr.headerMenu.length > 0" slot="header">
-      {{ attr.headerTitle }} 
+      {{ attr.headerTitle | translate}} 
       <b-dropdown class="pull-right" variant="link" size="sm" no-caret>
         <template slot="button-content">
           <i class="fa fa-ellipsis-v"></i> <span class="sr-only">Menu</span>
         </template>
         <b-dropdown-item href="#" v-for="(menu, idx) in attr.headerMenu" :key="idx">
-          <span v-html="menu.iconClass"></span>{{ menu.title }}
+          <span v-html="menu.iconClass"></span>{{ menu.title | translate}}
         </b-dropdown-item>
       </b-dropdown>
     </div>

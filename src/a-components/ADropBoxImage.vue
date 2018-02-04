@@ -52,7 +52,7 @@ export default {
       uploadedFile: [],
       uploadError: null,
       currentStatus: null,
-      uploadFieldName: 'photos',
+      uploadFieldName: 'file',
       uploadProgress: 75
     }
   },
@@ -86,7 +86,7 @@ export default {
         }
       }
 
-      api.upload('/', formData, config,
+      api.upload('/generic/file/upload', formData, config,
         (response) => {
           // this.uploadedFiles = [].concat(response)
           this.currentStatus = STATUS_SUCCESS
@@ -144,8 +144,19 @@ export default {
       this.previewImage(fileData)
 
       // save it
-      this.dummyUpload(fileData)
-      // this.upload(formData)
+      // this.dummyUpload(fileData)
+      // handle file changes
+      const formData = new FormData()
+
+      if (!fileList.length) return
+
+      // append the files to FormData
+      Array
+        .from(Array(fileList.length).keys())
+        .map(x => {
+          formData.append(fieldName, fileList[x], fileList[x].name)
+        })
+      this.upload(formData)
     }
   },
   mounted () {

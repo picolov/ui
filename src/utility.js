@@ -4,7 +4,7 @@ import api from './api/common'
 
 export default {
   install: function (Vue) {
-    Object.defineProperty(Vue.prototype, '$util', { value: {stringInject, getObjectFromString, uuid, evaluateString, processAction, datetimeToString} })
+    Object.defineProperty(Vue.prototype, '$util', { value: {stringInject, getObjectFromString, orderComponentList, uuid, evaluateString, processAction, datetimeToString} })
   }
 }
 
@@ -240,6 +240,55 @@ function stringInject (str, data) {
   }
 }
 
+function orderComponentList (componentList) {
+  let result = []
+  // group all row component
+  let rowMap = {}
+  let maxRow = 0
+  componentList.sort(function (comp1, comp2) {
+    if (!comp1.row && !comp2.row) return 1
+    else if (comp1.row && !comp2.row) return 1
+    else if (!comp1.row && comp2.row) return -1
+    else return comp1.row - comp2.row
+  })
+  for (let i = 0; i < componentList.length; i++) {
+    let component = componentList[i]
+    if (component.row == null) component.row = maxRow + 1
+    if (component.row > maxRow) maxRow = component.row
+    if (rowMap[component.row]) {
+      rowMap[component.row].push(component)
+    } else {
+      rowMap[component.row] = [component]
+    }
+  }
+  // sorting each column of row to start from little column number
+  for (let row in rowMap) {
+    if (rowMap.hasOwnProperty(row)) {
+      rowMap[row].sort(function (comp1, comp2) {
+        if (!comp1.col && !comp2.col) return 1
+        else if (comp1.col && !comp2.col) return 1
+        else if (!comp1.col && comp2.col) return -1
+        else return comp1.col - comp2.col
+      })
+      let maxCol = 1
+      for (let i = 0; i < rowMap[row].length; i++) {
+        let component = rowMap[row][i]
+        if (component.col > maxCol) {
+          component.offset = component.col - maxCol
+        } else {
+          maxCol += component.width
+        }
+      }
+    }
+  }
+  for (let i = 0; i <= maxRow; i++) {
+    if (rowMap.hasOwnProperty(i)) {
+      result.push(rowMap[i])
+    }
+  }
+  return result
+}
+
 function getObjectFromString (data, key) {
   let tokenArr = key.split('.')
   let result = null
@@ -272,7 +321,9 @@ function uuid () {
   })
 }
 
-function evaluateString (strStatement, component, data, item, index) {
+function evaluateString (strStatement, component, item, index) {
+  // eslint-disable-next-line no-unused-vars
+  let data = this.$store.state.generic.data
   // eslint-disable-next-line no-eval
   return eval(strStatement)
 }

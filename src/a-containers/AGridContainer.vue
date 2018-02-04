@@ -14,7 +14,7 @@
       ]"
       :use-css-transforms="true"
       @layout-updated="layoutUpdatedEvent">
-        <grid-item v-for="(component, idx) in componentLayout" :key="idx" :style="{'z-index': component.content.zIndex || idx}"
+        <grid-item v-for="(component, idx) in componentLayout" :key="idx" v-if="component.content.ifCondition ? evaluateStatement(component.content.ifCondition, attr, component.content, idx) : true" :style="{'z-index': component.content.zIndex || idx}"
           :class="{'grid-item': editMode}"
           :x="component.x"
           :y="component.y"
@@ -64,13 +64,18 @@ export default {
     for (let i = 0; i < this.attr.content.length; i++) {
       let component = this.attr.content[i]
       if (component.col != null && component.row != null && component.width != null && component.height != null && component.id != null) {
-        this.componentLayout.push({x: component.col, y: component.row, w: component.width, h: component.height, i: 'c_' + component.id, content: component})
+        if (component.ifCondition == null || (component.ifCondition && this.evaluateStatement(component.ifCondition, this.attr, component, i))) {
+          this.componentLayout.push({x: component.col, y: component.row, w: component.width, h: component.height, i: 'c_' + component.id, content: component})
+        }
       }
     }
   },
   methods: {
     layoutUpdatedEvent (layout) {
       // console.log(layout)
+    },
+    evaluateStatement (statement, component, item, index) {
+      return this.$util.evaluateString.bind(this)(statement, component, item, index)
     }
   }
 }

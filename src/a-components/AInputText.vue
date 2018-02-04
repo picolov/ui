@@ -47,7 +47,9 @@ export default {
       }
     },
     inputType () {
-      if (this.attr.format && this.attr.format === 'number') {
+      if (this.attr.format && this.attr.format === 'password') {
+        return 'password'
+      } else if (this.attr.format && this.attr.format === 'number') {
         return 'number'
       } else {
         return 'text'

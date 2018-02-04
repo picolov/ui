@@ -16,22 +16,6 @@ import App from './App'
 import store from './store'
 import router from './router'
 import { VeeValidate, VeeConfig } from './validation'
-import FileUploadBase64 from './components/FileUploadBase64'
-import ALabel from './components/ALabel'
-import AButton from './components/AButton'
-import AInputText from './components/AInputText'
-import ATable from './components/ATable'
-import ADatePicker from './components/ADatePicker'
-import ADropDown from './components/ADropDown'
-import ADropBoxImage from './components/ADropBoxImage'
-import AImageLazy from './components/AImageLazy'
-import AImage from './components/AImage'
-
-import AContainer from './containers/AContainer'
-import ACardContainer from './containers/ACardContainer'
-import AStackContainer from './containers/AStackContainer'
-import GenericTabs from './containers/Tabs'
-import GenericMultiStep from './containers/MultiStep'
 
 import 'vue-form-wizard/dist/vue-form-wizard.min.css'
 
@@ -49,23 +33,19 @@ Vue.use(underscore)
 // set the start locale to use
 Vue.i18n.set('en')
 Vue.use(VeeValidate, VeeConfig)
+// load components
+const reqComponent = require.context('./a-components/', true, /\.(vue)$/i)
+reqComponent.keys().map(key => {
+  const name = key.match(/\w+/)[0]
+  return Vue.component(name, () => import('./a-components/' + name))
+})
+// load containers
+const reqContainer = require.context('./a-containers/', true, /\.(vue)$/i)
+reqContainer.keys().map(key => {
+  const name = key.match(/\w+/)[0]
+  return Vue.component(name, () => import('./a-containers/' + name))
+})
 
-// internal component
-Vue.component('a-container', AContainer)
-Vue.component('a-cardContainer', ACardContainer)
-Vue.component('a-stackContainer', AStackContainer)
-Vue.component('generic-tabs', GenericTabs)
-Vue.component('generic-multistep', GenericMultiStep)
-Vue.component('generic-filebase64', FileUploadBase64)
-Vue.component('a-label', ALabel)
-Vue.component('a-button', AButton)
-Vue.component('a-inputText', AInputText)
-Vue.component('a-table', ATable)
-Vue.component('a-datePicker', ADatePicker)
-Vue.component('a-dropDown', ADropDown)
-Vue.component('a-dropBoxImage', ADropBoxImage)
-Vue.component('a-imageLazy', AImageLazy)
-Vue.component('a-image', AImage)
 // external component
 Vue.component('v-select', vSelect)
 

@@ -37,6 +37,7 @@
     "vue-underscore": "^0.1.4",
     "vue2-datepicker": "^1.7.0",
     "vue2-google-maps": "^0.8.4",
+    "vuedraggable": "^2.16.0",
     "vuex": "^3.0.1",
     "vuex-i18n": "^1.8.0"
   },
