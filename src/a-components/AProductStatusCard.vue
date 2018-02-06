@@ -1,0 +1,57 @@
+<template>
+  <div class="card product" :style="attr.style"
+  @click="btnClick.bind(this, attr.cardAction)()">
+    <img v-if="(!attr.imagePosition || attr.imagePosition=='top') && attr.imageSrc" class="card-img-top img-fluid" :src="attr.imageSrc" :alt="attr.imageAlt">
+    <div class="card-body">
+      <span v-if="!attr.imagePosition || attr.imagePosition=='top'" class="card-button-top">{{attr.statusText}}</span>
+      <h4 class="card-title text-center">{{ attr.title | translate }}</h4>
+      <p class="card-text text-center">{{ attr.subtitle | translate }}</p>
+      <span v-if="attr.imagePosition=='bottom'" class="card-button-bottom">{{attr.statusText}}</span>
+    </div>
+    <img v-if="attr.imagePosition=='bottom' && attr.imageSrc" class="card-img-bottom img-fluid" :src="attr.imageSrc" :alt="attr.imageAlt">
+  </div>
+</template>
+
+<script>
+
+export default {
+  name: 'a-productStatusCard',
+  components: {
+  },
+  props: {
+    attr: {
+      type: Object,
+      required: true,
+      default: () => {}
+    },
+    arraySequence: {
+      type: String,
+      required: false,
+      default: () => ''
+    }
+  },
+  data () {
+    return {
+    }
+  },
+  computed: {
+  },
+  mounted () {
+  },
+  methods: {
+    btnClick (component) {
+      if (component === undefined) return
+      this.$util.processAction(this, component.action, component, null, null, this.$route.query)
+    }
+  }
+}
+</script>
+
+<style lang="scss">
+  .card.product{
+    cursor: pointer;
+  }
+  .card.product:hover{
+    opacity: 0.9;
+  }
+</style>

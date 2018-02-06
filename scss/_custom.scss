@@ -50,6 +50,20 @@
     border-radius: 8px 8px 0 0;
 }
 
+.card-img-bottom {
+    border-radius: 0 0 8px 8px;
+}
+
+.card-img-left {
+    float: left;
+    border-radius: 8px 0 0 8px;
+}
+
+.card-img-right {
+    float: right;
+    border-radius: 0 8px 8px 0;
+}
+
 .card-image-left {
     float: left;
     margin-bottom: 20px;
@@ -59,9 +73,8 @@
     position: relative;
 }
 
-.card-button-top {
+.card-button-top, .card-button-bottom {
     position: absolute;
-    top: -19px;
     left: 50%;
     transform: translateX(-50%);
     border-radius: 60px;
@@ -79,6 +92,10 @@
     padding: 0.375rem 0.75rem;
     font-size: 1rem;
     line-height: 1.5;
+}
+
+.card-button-top {
+    top: -19px;
 }
 
 .card-toggle-selected {
