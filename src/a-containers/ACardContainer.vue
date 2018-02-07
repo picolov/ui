@@ -17,7 +17,7 @@
         <template slot="button-content">
           <i class="fa fa-ellipsis-v"></i> <span class="sr-only">Menu</span>
         </template>
-        <b-dropdown-item href="#" v-for="(menu, idx) in attr.headerMenu" :key="idx">
+        <b-dropdown-item href="#" v-for="(menu, idx) in attr.headerMenu" :key="idx" @click="btnClick.bind(this, menu.action)()">
           <span v-html="menu.iconClass"></span>{{ menu.title | translate}}
         </b-dropdown-item>
       </b-dropdown>
@@ -58,6 +58,10 @@ export default {
   mounted () {
   },
   methods: {
+    btnClick (component) {
+      if (component === undefined) return
+      this.$util.processAction(this, component.action, component, null, null, this.$route.query)
+    }
   }
 }
 </script>

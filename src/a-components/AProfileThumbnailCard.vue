@@ -1,5 +1,5 @@
 <template>
-  <div class="card profile-thumbnail" :style="attr.style"
+  <div class="card profile-thumbnail" :class="{ 'card-link': (attr.cardAction) }" :style="attr.style"
   @click="btnClick.bind(this, attr.cardAction)()">
     <b-container>
       <b-row>
@@ -8,6 +8,16 @@
         </b-col>
         <b-col>
           <div class="card-body">
+            <div class="card-action" v-if="Array.isArray(attr.headerMenu) && attr.headerMenu.length > 0">
+              <b-dropdown variant="link" size="sm" no-caret>
+                <template slot="button-content">
+                  <i class="fa fa-ellipsis-v"></i> <span class="sr-only">Menu</span>
+                </template>
+                <b-dropdown-item href="#" v-for="(menu, idx) in attr.headerMenu" :key="idx"  @click="btnClick.bind(this, menu.action)()">
+                  <span v-html="menu.iconClass"></span>{{ menu.title | translate}}
+                </b-dropdown-item>
+              </b-dropdown>
+            </div>
             <span class="card-text" style="display: inline-block; padding-left: 1em;">
               <span style="font-weight: bold;">{{attr.title}}</span><br/>
               {{attr.text}} <br/>
@@ -60,14 +70,19 @@ export default {
 </script>
 
 <style lang="scss">
-  .card.profile-thumbnail{
+  .card.card-link{
     cursor: pointer;
   }
-  .card.profile-thumbnail:hover{
+  .card.card-link:hover{
     opacity: 0.9;
   }
   .card.profile-thumbnail .image-thumbnail {
     width: 100%;
     height: 100%;
+  }
+  .card.profile-thumbnail .card-action{
+    position: absolute !important;
+    right: -5px;
+    top: 5px;
   }
 </style>
