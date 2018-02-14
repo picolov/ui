@@ -10,6 +10,7 @@ import vueEventCalendar from 'vue-event-calendar'
 import 'chart.js'
 import 'hchs-vue-charts'
 import vSelect from 'vue-select'
+import vRateIt from 'vue-rate-it'
 import underscore from 'vue-underscore'
 import UtilityClass from './utility.js'
 import App from './App'
@@ -48,6 +49,8 @@ reqContainer.keys().map(key => {
 
 // external component
 Vue.component('v-select', vSelect)
+Vue.component('star-rating', vRateIt.StarRating)
+Vue.component('fa-rating', vRateIt.FaRating)
 
 const EventBus = new Vue()
 

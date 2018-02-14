@@ -21,8 +21,9 @@
             <span class="card-text" style="display: inline-block; padding-left: 1em;">
               <span style="font-weight: bold;">{{attr.title}}</span><br/>
               {{attr.text}} <br/>
-              <span style="color: #ffc928;"><i class="fa fa-star"/><i class="fa fa-star"/><i class="fa fa-star-o"/><i class="fa fa-star-o"/><i class="fa fa-star-o"/></span><br/>
-              <span><small>63 ratings</small></span>
+              <div v-if="attr.rating">
+                <a-inputRating :attr="attr.rating" :array-sequence="arraySequence"></a-inputRating>
+              </div>
             </span>
           </div>
         </b-col>
