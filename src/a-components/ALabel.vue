@@ -1,6 +1,7 @@
 <template>
   <label 
     :id="attr.i" 
+    class="a-label"
     :style="[attr.style, {margin: 0, minHeight: '40px', paddingTop: '0.5em'}]">
     {{labelText}} <small v-if="attr.mandatory" class="text-danger">*</small>
   </label>
@@ -51,5 +52,8 @@ export default {
 </script>
 
 <style lang="scss">
+.a-label {
+  width: 100%;
+}
 </style>
 

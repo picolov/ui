@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :style="attr.style">
     <component v-for="(component, idx) in attr.content" 
       :key="idx" 
       :is="component.type" 
@@ -34,6 +34,12 @@ export default {
   computed: {
   },
   mounted () {
+    this.attr.content.sort(function (comp1, comp2) {
+      if (!comp1.idx && !comp2.idx) return 1
+      else if (comp1.idx && !comp2.idx) return 1
+      else if (!comp1.idx && comp2.idx) return -1
+      else return comp1.idx - comp2.idx
+    })
   },
   methods: {
   }
