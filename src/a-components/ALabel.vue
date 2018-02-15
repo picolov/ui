@@ -28,25 +28,17 @@ export default {
       if (this.attr.text && !this.attr.model) {
         value = this.$t(this.$util.stringInject(this.attr.text, {data: this.$store.state.generic.data}))
       } else if (!this.attr.text && this.attr.model) {
-        value = this.getObjectFromString(this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
+        value = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
         if (this.attr.format === 'date') {
           value = this.$util.datetimeToString(value)
+        } else if (this.attr.format === 'currency') {
+          value = this.$util.moneyFormat(value, 'Rp', 0, '.', ',')
         }
       }
       return value
     }
   },
   methods: {
-    getObjectFromString (key, defaultValue) {
-      let result = this.$util.getObjectFromString(this.$store.state.generic.data, key)
-      if (result === null) {
-        return defaultValue
-      } else if (result instanceof Array) {
-        return result.join(', ')
-      } else {
-        return result
-      }
-    }
   }
 }
 </script>

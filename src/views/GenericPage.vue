@@ -186,7 +186,7 @@ export default {
     },
     mapPickerShow () {
       this.path = this.$store.state.app.path
-      if (this.path.length > 0) this.locationPicked = this.path[0]
+      if (this.path.length > 0) this.locationPicked = {lat: this.path[0].lat, lng: this.path[0].lng}
       else this.locationPicked = {lat: -6.2152408, lng: 106.8301251}
     },
     mapPickerShown () {

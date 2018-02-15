@@ -960,7 +960,6 @@ export default {
       return locationPicked
     },
     refreshMap (mapComp) {
-      console.log('---refresh map : ' + mapComp.id)
       let refMap = this.$refs[mapComp.id]
       if (refMap) {
         Object.assign(this.shared.refs, this.$refs)
@@ -968,7 +967,6 @@ export default {
         refMap = this.shared.refs[mapComp.id]
       }
       if (refMap && refMap[0]) {
-        console.log('ref found!!')
         let markerList = []
         if (mapComp.type === 'map') {
           markerList.push(this.stringToLatlng(this.data[mapComp.model]))

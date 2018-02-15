@@ -1,58 +1,45 @@
 <template>
-    <div class="vue-base64-file-upload">
-        <img v-show="previewImage && !disablePreview" :src="previewImage" :class="imageClass" />
+    <div class="vue-base64-file-upload" :id="attr.id">
+        <img v-show="previewImage && attr.showPreview" :src="previewImage" />
         <div class="vue-base64-file-upload-wrapper" :style="wrapperStyles">
-            <input type="file" @change="onChange" :style="fileInputStyles" :accept="accept" />
-            <b-btn :class="btnClass" :style="btnStyles">{{placeholder}}</b-btn>
+            <input type="file" @change="onChange" :style="fileInputStyles" :accept="'image/png,image/gif,image/jpeg'" />
+            <b-btn :style="btnStyles">{{attr.label||'Select File'}}</b-btn>
         </div>
     </div>
 </template>
 
 <script>
+import { UPDATE_DATA } from '../store/mutation-types'
+
 export default {
-  name: 'generic-filebase64',
+  name: 'a-fileUploadBase64',
   props: {
-    imageClass: {
+    attr: {
+      type: Object,
+      required: true,
+      default: () => {}
+    },
+    arraySequence: {
       type: String,
-      default: ''
-    },
-    btnClass: {
-      type: String,
-      default: ''
-    },
-    accept: {
-      type: String,
-      default: 'image/png,image/gif,image/jpeg'
-    },
-    maxSize: {
-      type: Number,
-      default: 10 // megabytes
-    },
-    disablePreview: {
-      type: Boolean,
-      default: false
-    },
-    fileName: {
-      type: String,
-      default: ''
-    },
-    placeholder: {
-      type: String,
-      default: 'Click here to upload image'
-    },
-    defaultPreview: {
-      type: String,
-      default: ''
+      required: false,
+      default: () => ''
     }
   },
   data: function data () {
     return {
       file: null,
-      preview: null,
-      visiblePreview: false
+      preview: null
     }
   },
   computed: {
+    data: {
+      get () {
+        return this.$store.state.generic.data[this.attr.model + this.arraySequence]
+      },
+      set (value) {
+        this.$store.commit(UPDATE_DATA, {key: this.attr.model + this.arraySequence, value: value})
+      }
+    },
     wrapperStyles: function wrapperStyles () {
       return {
         'position': 'relative',
@@ -80,7 +67,7 @@ export default {
       }
     },
     previewImage: function previewImage () {
-      return this.preview || this.defaultPreview
+      return this.preview || this.attr.defaultPreview
     }
   },
   methods: {
@@ -97,7 +84,9 @@ export default {
       var size = file.size && file.size / Math.pow(1000, 2)
 
       // check file max size
-      if (size > this.maxSize) {
+      let maxSize = 10
+      if (this.attr.maxSize) maxSize = this.attr.maxSize
+      if (size > maxSize) {
         this.$emit('size-exceeded', size)
         return
       }
@@ -113,6 +102,7 @@ export default {
 
         if (dataURI) {
           _this.$emit('load', dataURI)
+          _this.data = dataURI
           _this.preview = dataURI
         }
       }

@@ -18,7 +18,7 @@
         <h6 class="text-center">{{data.label | translate}}</h6>
       </template>
       <template slot="actions" v-if="attr.actions != undefined" slot-scope="row">
-        <template v-for="(action, index) in attr.actions" v-if="action.ifCondition ? this.$util.evaluateString(action.ifCondition, attr, data, row.item, row.index) : true">
+        <template v-for="(action, index) in attr.actions" v-if="action.ifCondition ? $util.evaluateString.bind(this)(action.ifCondition, attr, row.item, row.index) : true">
           <template v-if="action.component && action.component === 'switch'">
             <toggle-button @change="rowActionClick(row.item, row.index, attr, action)" :height="30" :color="{checked: '#ffc928', unchecked: '#ffffff'}" v-model="row.item[action.model]" :style="attr.style" :key="index" style="margin-right: 0.5em"/>
           </template>
@@ -88,6 +88,20 @@ export default {
       }
       let hasFilter = false
       let filterCrit = ''
+      this.filter = {}
+      if (this.attr.criteria) {
+        let processedCrit = this.$util.stringInject(this.attr.criteria, this.$store.state.generic.data)
+        if (processedCrit) {
+          let tokenListCrit = processedCrit.split(',')
+          for (let i = 0; i < tokenListCrit.length; i++) {
+            let tokenCrit = tokenListCrit[i].split(';')
+            let critKey = tokenCrit[0]
+            let critOps = tokenCrit[1]
+            let critVal = tokenCrit[2]
+            this.filter[critKey] = critOps + ':' + critVal
+          }
+        }
+      }
       for (var key in this.filter) {
         if (this.filter.hasOwnProperty(key) && this.filter[key] != null && this.filter[key].length > 0) {
           hasFilter = true

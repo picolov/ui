@@ -4,7 +4,7 @@
       :id="attr.id" 
       type="text" 
       readonly 
-      @click.native="mapPickerClick(attr.model+arraySequence, attr)" 
+      @click.native="mapPickerClick()" 
       :name="attr.model+arraySequence" 
       :value="arrayToString(data)"
       v-validate="!attr.validation ? '' : attr.validation.join('|')" 
@@ -18,7 +18,8 @@
 
 <script>
 import Vue from 'vue'
-import { UPDATE_DATA, REFRESH_COMPONENT } from '../store/mutation-types'
+import { UPDATE_DATA, REFRESH_COMPONENT, SELECT_LOCATION } from '../store/mutation-types'
+import { mapMutations } from 'vuex'
 
 export default {
   name: 'a-mapPicker',
@@ -54,8 +55,8 @@ export default {
       }
       return result
     },
-    mapPickerClick (model, component) {
-      let pathModel = this.data[model]
+    mapPickerClick () {
+      let pathModel = this.data
       let instance = this
       this.selectMapLocation({
         path: pathModel,
@@ -67,7 +68,8 @@ export default {
         }
       })
     },
-    refreshMap (mapComp) { // put this on the map component itself, because now we use the event bus using vuex store componentToRefresh
+    // TODO: NOT USED ANYMORE , put this on the map component itself, because now we use the event bus using vuex store componentToRefresh
+    refreshMap (mapComp) {
       let refMap = this.shared.refs[mapComp.id]
       if (refMap && refMap[0]) {
         let markerList = []
@@ -108,7 +110,10 @@ export default {
           Vue.$gmapDefaultResizeBus.$emit('resize')
         })
       }
-    }
+    },
+    ...mapMutations({
+      selectMapLocation: SELECT_LOCATION
+    })
   }
 }
 </script>

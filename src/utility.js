@@ -4,7 +4,7 @@ import api from './api/common'
 
 export default {
   install: function (Vue) {
-    Object.defineProperty(Vue.prototype, '$util', { value: {stringInject, getObjectFromString, orderComponentList, uuid, evaluateString, processAction, datetimeToString} })
+    Object.defineProperty(Vue.prototype, '$util', { value: {stringInject, getObjectOrDefault, getObjectFromString, orderComponentList, uuid, evaluateString, processAction, datetimeToString, moneyFormat} })
   }
 }
 
@@ -222,17 +222,42 @@ function datetimeToString (datetime, formatParam) {
 function stringInject (str, data) {
   if (typeof str === 'string' && (data instanceof Array)) {
     return str.replace(/({\d})/g, function (i) {
-      return data[i.replace(/{/, '').replace(/}/, '')]
+      let params = i.replace(/{/, '').replace(/}/, '')
+      let paramArray = params.split(';')
+      if (paramArray.length === 1) {
+        return data[paramArray[0]]
+      } else if (paramArray.length === 2) {
+        let statement = paramArray[1]
+        let value = data[paramArray[0]]
+        if (typeof value === 'string' || value instanceof String) {
+          statement = replaceAll('#', '"' + value + '"', statement)
+        } else {
+          statement = replaceAll('#', value, statement)
+        }
+        return evaluateString(statement, null, null, null)
+      } else {
+        return i
+      }
     })
   } else if (typeof str === 'string' && (data instanceof Object)) {
     for (let key in data) {
       return str.replace(/({([^}]+)})/g, function (i) {
-        let key = i.replace(/{/, '').replace(/}/, '')
-        let result = getObjectFromString(data, key)
-        if (result === null) {
+        let params = i.replace(/{/, '').replace(/}/, '')
+        let paramArray = params.split(';')
+        if (paramArray.length === 1) {
+          return getObjectFromString(data, paramArray[0])
+        } else if (paramArray.length === 2) {
+          let statement = paramArray[1]
+          let value = getObjectFromString(data, paramArray[0])
+          if (typeof value === 'string' || value instanceof String) {
+            statement = replaceAll('#', '"' + value + '"', statement)
+          } else {
+            statement = replaceAll('#', value, statement)
+          }
+          return evaluateString(statement, null, null, null)
+        } else {
           return i
         }
-        return result
       })
     }
   } else {
@@ -289,6 +314,17 @@ function orderComponentList (componentList) {
   return result
 }
 
+function getObjectOrDefault (data, key, defaultValue) {
+  let result = getObjectFromString(data, key)
+  if (result === null) {
+    return defaultValue
+  } else if (result instanceof Array) {
+    return result.join(', ')
+  } else {
+    return result
+  }
+}
+
 function getObjectFromString (data, key) {
   let tokenArr = key.split('.')
   let result = null
@@ -323,7 +359,10 @@ function uuid () {
 
 function evaluateString (strStatement, component, item, index) {
   // eslint-disable-next-line no-unused-vars
-  let data = this.$store.state.generic.data
+  let data = []
+  if (this && this.$store != null) {
+    data = this.$store.state.generic.data
+  }
   // eslint-disable-next-line no-eval
   return eval(strStatement)
 }
@@ -334,4 +373,14 @@ function escapeRegExp (str) {
 
 function replaceAll (find, replace, str) {
   return str.replace(new RegExp(escapeRegExp(find), 'g'), replace)
+}
+
+function moneyFormat (number, currency, decPlaces, thouSeparator, decSeparator) {
+  decPlaces = isNaN(decPlaces = Math.abs(decPlaces)) ? 2 : decPlaces
+  decSeparator = decSeparator === undefined ? '.' : decSeparator
+  thouSeparator = thouSeparator === undefined ? ',' : thouSeparator
+  let sign = number < 0 ? '-' : ''
+  let i = parseInt(number = Math.abs(+number || 0).toFixed(decPlaces)) + ''
+  let j = i.length > 3 ? i.length % 3 : 0
+  return (currency ? currency + ' ' : '') + sign + (j ? i.substr(0, j) + thouSeparator : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, '$1' + thouSeparator) + (decPlaces ? decSeparator + Math.abs(number - i).toFixed(decPlaces).slice(2) : '')
 }

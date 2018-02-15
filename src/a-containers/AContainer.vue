@@ -8,12 +8,12 @@
           :key="colIdx" 
           v-if="component.ifCondition ? evaluateStatement(component.ifCondition, attr, component, colIdx) : true"
           :class="[editMode?'grid-item-edit':'', component.offset?'offset-' + component.offset:'','col-' + component.width]" 
-          :style="{
+          :style="[attr.style, {
             paddingLeft: attr.marginH==null?'5px':attr.marginH + 'px',
             paddingRight: attr.marginH==null?'5px':attr.marginH + 'px',
             paddingTop: attr.marginV==null?'5px':attr.marginV + 'px',
             paddingBottom: attr.marginV==null?'5px':attr.marginV + 'px'
-            }">
+            }]">
           <span v-if="editMode" class="col-handle">&nbsp;</span>
           <component :is="component.type" :attr="component" :array-sequence="arraySequence"/>
         </div>
