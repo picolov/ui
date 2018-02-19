@@ -22,6 +22,7 @@ export default {
   },
   methods: {
     btnClick (action, component) {
+      if (action === undefined) return
       this.$util.processAction(this, action, component, null, null, this.$route.query)
     }
   }

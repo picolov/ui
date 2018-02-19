@@ -66,6 +66,7 @@ export default {
       this.$store.commit(UPDATE_DATA, {key: optionModel + this.arraySequence, value: value})
     },
     switchChanged (action, component, item, itemIndex) {
+      if (action === undefined) return
       this.$util.processAction(this, action, component, item, itemIndex, this.$route.query)
     }
   }

@@ -153,6 +153,7 @@ export default {
       return null
     },
     rowActionClick (item, index, component, action) {
+      if (action === undefined) return
       this.$util.processAction(this, action, component, item, index, this.$route.query)
     },
     filterTyped (component) {

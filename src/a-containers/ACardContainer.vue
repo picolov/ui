@@ -1,5 +1,5 @@
 <template>
-  <div class="card" :class="[{'card-link': (attr.cardAction, attr)}, bgVariant, textVariant]" :style="attr.style"
+  <div class="card" :class="[{'card-link': (attr.cardAction)}, bgVariant, textVariant]" :style="attr.style"
 @click="btnClick.bind(this, attr.cardAction, attr)()">
     <div v-if="attr.headerTitle  != undefined || haveMenu" class="card-header" :class="[headerBgVariant, headerTextVariant]">
       {{ attr.headerTitle | translate}} 
@@ -68,6 +68,7 @@ export default {
   },
   methods: {
     btnClick (action, component) {
+      if (action === undefined) return
       this.$util.processAction(this, action, component, null, null, this.$route.query)
     }
   }
