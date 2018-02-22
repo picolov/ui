@@ -59,6 +59,13 @@
     border-radius: 8px 0 0 8px;
 }
 
+.card.card-link{
+    cursor: pointer;
+}
+.card.card-link:hover{
+    opacity: 0.9;
+}
+
 .card-action button{
     border: none;
     background-color: transparent;

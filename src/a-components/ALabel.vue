@@ -29,7 +29,11 @@ export default {
         let result = this.$util.stringInject(this.attr.text, {data: this.$store.state.generic.data, props: this.$props})
         value = this.$t(result)
       } else if (!this.attr.text && this.attr.model) {
-        value = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
+        if (this.attr.mode === 'array') {
+          value = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.model + '.' + (this.arraySequence[1] - 1) + '' + (this.attr.key ? '.' + this.attr.key : ''), '')
+        } else {
+          value = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
+        }
         if (this.attr.format === 'date') {
           value = this.$util.datetimeToString(value)
         } else if (this.attr.format === 'currency') {

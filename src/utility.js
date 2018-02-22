@@ -103,6 +103,7 @@ function execForm (instance, action, component, item, index, urlParam) {
     case 'post':
       api.post(url, payload,
         (response) => {
+          if (action.redirect) action.redirect = instance.$util.stringInject(action.redirect, response)
           if (action.model) {
             if (action.model === 'root' || action.model === '') {
               for (let key in response.data) {
@@ -157,6 +158,7 @@ function execForm (instance, action, component, item, index, urlParam) {
     case 'put':
       api.put(url, payload,
         (response) => {
+          if (action.redirect) action.redirect = instance.$util.stringInject(action.redirect, response)
           if (action.noAlert) {
             if (action.redirect) {
               instance.$router.push({ path: action.redirect })
@@ -373,7 +375,7 @@ function getObjectFromString (data, key) {
     } else if (result.hasOwnProperty(token)) {
       result = result[token]
     } else {
-      break
+      result = null
     }
   }
   return result

@@ -20,11 +20,7 @@
           <b-col>
             <div class="card-body">
               <span class="card-text" style="display: inline-block; padding-left: 1em;">
-                <span style="font-weight: bold;">{{ attr.title | translate }}</span><br/>
-                <span>{{ attr.text | translate }}</span> <br/>
-                <div v-if="attr.rating">
-                  <a-inputRating :attr="attr.rating" :array-sequence="arraySequence"></a-inputRating>
-                </div>
+                <a-container :attr="attr" :array-sequence="arraySequence"/>
               </span>
             </div>
           </b-col>
@@ -40,7 +36,7 @@
 <script>
 
 export default {
-  name: 'a-profileThumbnailCard',
+  name: 'a-thumbnailCardContainer',
   components: {
   },
   props: {
