@@ -4,7 +4,7 @@ import * as types from '../mutation-types'
 // initial state
 const state = {
   options: {},
-  components: [],
+  component: {},
   data: {},
   componentToRefresh: []
 }
@@ -25,6 +25,40 @@ const mutations = {
   [types.UPDATE_DATA] (state, {key, value}) {
     Vue.set(state.data, key, value)
   },
+  [types.UPDATE_COMPONENT] (state, {id, attr, key, value}) {
+    if (state.component[id]) {
+      if (key) {
+        if (state.component[id][attr]) {
+          Vue.set(state.component[id][attr], key, value)
+        } else {
+          Vue.set(state.component[id], attr, {})
+          Vue.set(state.component[id][attr], key, value)
+        }
+      } else {
+        if (value) {
+          Vue.set(state.component[id], attr, value)
+        } else {
+          Vue.set(state.component[id], attr, {})
+        }
+      }
+    } else {
+      Vue.set(state.component, id, {})
+      if (key) {
+        if (state.component[id][attr]) {
+          Vue.set(state.component[id][attr], key, value)
+        } else {
+          Vue.set(state.component[id], attr, {})
+          Vue.set(state.component[id][attr], key, value)
+        }
+      } else {
+        if (value) {
+          Vue.set(state.component[id], attr, value)
+        } else {
+          Vue.set(state.component[id], attr, {})
+        }
+      }
+    }
+  },
   [types.UPDATE_DATA_COLLECTION] (state, {collection, prefix}) {
     for (let key in collection) {
       Vue.set(state.data, prefix ? prefix + '_' + key : key, collection[key])
@@ -44,6 +78,13 @@ const mutations = {
   },
   [types.CLEAR_DATA] (state) {
     state.data = {}
+  },
+  [types.CLEAR_COMPONENT] (state, {id, attr}) {
+    if (attr) {
+      state.component[id][attr] = {}
+    } else {
+      state.component[id] = {}
+    }
   }
 }
 

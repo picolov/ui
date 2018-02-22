@@ -26,7 +26,8 @@ export default {
     labelText () {
       let value = ''
       if (this.attr.text && !this.attr.model) {
-        value = this.$t(this.$util.stringInject(this.attr.text, {data: this.$store.state.generic.data}))
+        let result = this.$util.stringInject(this.attr.text, {data: this.$store.state.generic.data, props: this.$props})
+        value = this.$t(result)
       } else if (!this.attr.text && this.attr.model) {
         value = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
         if (this.attr.format === 'date') {

@@ -9,7 +9,7 @@
       :style="attr.style">
       <template v-for="field in fields" :slot="'HEAD_' + field.key" v-if="field.key != 'actions'" slot-scope="data">
         <h6 class="text-center" :key="field.key">{{data.label | translate}}</h6>
-        <input v-if="field.filter" type="text" @click.stop=";" v-model="filter[field.key]" @keyup="filterTyped(attr)" :key="field.key" style="width: 100%;"/>
+        <input v-if="field.filter" type="text" @click.stop=";" :value="filterValue(field.key)" @input="filterInput(field.key, $event)" :key="field.key" style="width: 100%;"/>
       </template>
       <template v-for="field in fields" :slot="field.key" v-if="field.key != 'actions'" slot-scope="data">
         {{data.value}}
@@ -24,7 +24,7 @@
           </template>
           <template v-else>
             <b-button size="sm" @click.stop="rowActionClick(row.item, row.index, attr, action)" class="row-action-button" :key="index" style="margin-right: 0.5em">
-              <i v-if="action.icon" :class="[action.icon]"></i>{{action.text | translate}}
+              <i v-if="action.icon" :class="[action.icon]"></i> {{action.text | translate}}
             </b-button>
           </template> 
         </template>
@@ -35,7 +35,7 @@
 </template>
 
 <script>
-import { UPDATE_DATA, FINISH_REFRESH_COMPONENT } from '../store/mutation-types'
+import { UPDATE_DATA, UPDATE_COMPONENT, FINISH_REFRESH_COMPONENT } from '../store/mutation-types'
 import moment from 'moment'
 import api from '../api/common'
 // TODO for other component (ex. inputTextFilter) to modify the filter, the component will suplly method to be called with the filter as param
@@ -50,7 +50,6 @@ export default {
   },
   data () {
     return {
-      filter: {},
       fields: [],
       currentPage: 1,
       perPage: 5,
@@ -81,73 +80,84 @@ export default {
   },
   methods: {
     myProvider (ctx, callback) {
-      let empty = []
-      let params = '?page=' + (ctx.currentPage - 1) + '&size=' + ctx.perPage
-      if (ctx.sortBy) {
-        params = params + '&sort=' + ctx.sortBy + ';' + (ctx.sortDesc ? 'desc' : 'asc')
-      }
-      let hasFilter = false
-      let filterCrit = ''
-      this.filter = {}
-      if (this.attr.criteria) {
-        let processedCrit = this.$util.stringInject(this.attr.criteria, this.$store.state.generic.data)
-        if (processedCrit) {
-          let tokenListCrit = processedCrit.split(',')
-          for (let i = 0; i < tokenListCrit.length; i++) {
-            let tokenCrit = tokenListCrit[i].split(';')
-            let critKey = tokenCrit[0]
-            let critOps = tokenCrit[1]
-            let critVal = tokenCrit[2]
-            this.filter[critKey] = critOps + ':' + critVal
+      if (this.$store.state.generic.component[this.attr.id]) {
+        let empty = []
+        let params = '?page=' + (ctx.currentPage - 1) + '&size=' + ctx.perPage
+        if (ctx.sortBy) {
+          params = params + '&sort=' + ctx.sortBy + ';' + (ctx.sortDesc ? 'desc' : 'asc')
+        }
+        let hasFilter = false
+        let filterCrit = ''
+        this.filter = this.$store.state.generic.component[this.attr.id]['filter']
+        if (this.attr.criteria) {
+          let processedCrit = this.$util.stringInject(this.attr.criteria, this.$store.state.generic.data)
+          if (processedCrit) {
+            let tokenListCrit = processedCrit.split(',')
+            for (let i = 0; i < tokenListCrit.length; i++) {
+              let tokenCrit = tokenListCrit[i].split(';')
+              let critKey = tokenCrit[0]
+              let critOps = tokenCrit[1]
+              let critVal = tokenCrit[2]
+              // this.filter[critKey] = critOps + ':' + critVal
+              this.$store.commit(UPDATE_COMPONENT, {id: this.attr.id, attr: 'filter', key: critKey, value: critOps + ':' + critVal})
+            }
           }
         }
-      }
-      for (var key in this.filter) {
-        if (this.filter.hasOwnProperty(key) && this.filter[key] != null && this.filter[key].length > 0) {
-          hasFilter = true
-          let filterVal = this.filter[key]
-          let filterOperator = 'filter'
-          let pos = filterVal.indexOf(':')
-          if (pos > -1) {
-            filterOperator = filterVal.substr(0, pos)
-            filterVal = filterVal.substr(pos + 1)
-          }
-          if (filterCrit.length === 0) {
-            filterCrit = key + ';' + filterOperator + ';' + filterVal
-          } else {
-            filterCrit = filterCrit + ',' + key + ';' + filterOperator + ';' + filterVal
+        for (var key in this.filter) {
+          if (this.filter.hasOwnProperty(key) && this.filter[key] != null && this.filter[key].length > 0) {
+            hasFilter = true
+            let filterVal = this.filter[key]
+            let filterOperator = 'filter'
+            let pos = filterVal.indexOf(':')
+            if (pos > -1) {
+              filterOperator = filterVal.substr(0, pos)
+              filterVal = filterVal.substr(pos + 1)
+            }
+            if (filterCrit.length === 0) {
+              filterCrit = key + ';' + filterOperator + ';' + filterVal
+            } else {
+              filterCrit = filterCrit + ',' + key + ';' + filterOperator + ';' + filterVal
+            }
           }
         }
-      }
-      if (hasFilter) {
-        params = params + '&criteria=' + filterCrit
-      }
-      if (this.attr.method === 'get') {
-        api.get(
-          this.attr.url + params,
-          (response) => {
-            let dataMap = response.data
-            this.totalRows = dataMap.totalRows
-            callback(dataMap.list)
-          },
-          () => {
-            this.totalRows = 0
-            callback(empty)
+        if (hasFilter) {
+          params = params + '&criteria=' + filterCrit
+        }
+        if (this.attr.model) {
+          this.totalRows = 0
+          if (this.data) this.totalRows = this.data.length
+          console.log(this.data)
+          if (this.data) console.log(this.data.length)
+          return this.data
+        } else {
+          if (this.attr.method === 'get') {
+            api.get(
+              this.attr.url + params,
+              (response) => {
+                let dataMap = response.data
+                this.totalRows = dataMap.totalRows
+                callback(dataMap.list)
+              },
+              () => {
+                this.totalRows = 0
+                callback(empty)
+              }
+            )
+          } else if (this.attr.method === 'post') {
+            api.post(
+              this.attr.url + params, {},
+              (response) => {
+                let dataMap = response.data
+                this.totalRows = dataMap.totalRows
+                callback(dataMap.list)
+              },
+              () => {
+                this.totalRows = 0
+                callback(empty)
+              }
+            )
           }
-        )
-      } else if (this.attr.method === 'post') {
-        api.post(
-          this.attr.url + params, {},
-          (response) => {
-            let dataMap = response.data
-            this.totalRows = dataMap.totalRows
-            callback(dataMap.list)
-          },
-          () => {
-            this.totalRows = 0
-            callback(empty)
-          }
-        )
+        }
       }
       // Must return null or undefined to signal b-table that callback is being used
       return null
@@ -156,12 +166,16 @@ export default {
       if (action === undefined) return
       this.$util.processAction(this, action, component, item, index, this.$route.query)
     },
-    filterTyped (component) {
-      this.$refs[component.id].refresh()
+    filterValue (key) {
+      return this.$store.state.generic.data[this.attr.id]['filter'][key]
+    },
+    filterInput (key, value) {
+      this.$store.commit(UPDATE_COMPONENT, {id: this.attr.id, attr: 'filter', key: key, value: value})
+      this.$refs[this.attr.id].refresh()
     }
   },
   mounted () {
-    this.filter = {}
+    this.$store.commit(UPDATE_COMPONENT, {id: this.attr.id, attr: 'filter'})
     this.fields = []
     this.currentPage = 1
     this.perPage = 5

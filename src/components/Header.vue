@@ -10,6 +10,11 @@
           <i class="fa fa-bars"></i>
         </a>
       </li>
+      <li class="d-md-down-none nav-item">
+        <router-link to="/page/search" aria-disabled="false" class="nav-link">
+          <i class="fa fa-search"></i>
+        </router-link>
+      </li>
     </ul>
     <ul class="nav navbar-nav right-end-nav">
       <b-nav-item-dropdown class="dropdown-flag" no-caret>

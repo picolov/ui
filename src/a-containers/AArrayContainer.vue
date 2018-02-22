@@ -30,7 +30,7 @@ export default {
   },
   computed: {
     data () {
-      return this.$store.state.generic.data[this.attr.model + this.arraySequence]
+      return this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), [])
     }
   },
   mounted () {

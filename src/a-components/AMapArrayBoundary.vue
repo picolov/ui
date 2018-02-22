@@ -36,7 +36,7 @@ import Vue from 'vue'
 import { FINISH_REFRESH_COMPONENT } from '../store/mutation-types'
 
 export default {
-  name: 'a-mapBoundary',
+  name: 'a-mapArrayBoundary',
   props: {
     attr: {
       type: Object,

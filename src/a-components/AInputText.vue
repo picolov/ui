@@ -17,7 +17,7 @@
 </template>
 
 <script>
-import { UPDATE_DATA } from '../store/mutation-types'
+import { UPDATE_DATA, UPDATE_COMPONENT } from '../store/mutation-types'
 
 export default {
   name: 'a-inputText',
@@ -35,15 +35,25 @@ export default {
   },
   data () {
     return {
+      filterStr: ''
     }
   },
   computed: {
     data: {
       get () {
-        return this.$store.state.generic.data[this.attr.model + this.arraySequence]
+        if (this.attr.filterKey && this.attr.filterComponentId) {
+          return this.filterStr
+        } else {
+          return this.$store.state.generic.data[this.attr.model + this.arraySequence]
+        }
       },
       set (value) {
-        this.$store.commit(UPDATE_DATA, {key: this.attr.model + this.arraySequence, value: value})
+        if (this.attr.filterKey && this.attr.filterComponentId) {
+          this.$store.commit(UPDATE_COMPONENT, {id: this.attr.filterComponentId, attr: 'filter', key: this.attr.filterKey, value: value})
+          this.filterStr = value
+        } else {
+          this.$store.commit(UPDATE_DATA, {key: this.attr.model + this.arraySequence, value: value})
+        }
       }
     },
     inputType () {

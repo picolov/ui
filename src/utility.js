@@ -9,12 +9,14 @@ export default {
 }
 
 function processAction (instance, action, component, item, index, urlParam) {
+  if (action.showLoading) { instance.$bus.$emit('show-full-loading', { key: 'fetchLayout' }) }
   let data = instance.$store.state.generic.data
   let mapInject = {data: data, item: item, urlParam: urlParam, index: index, component: component, action: action}
   let url = stringInject(action.url, mapInject)
   switch (action.type) {
     case 'refreshTable':
       instance.$store.commit(REFRESH_COMPONENT, {id: action.componentId})
+      if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
       break
     case 'getData':
       if (action.method && action.method === 'post') {
@@ -27,8 +29,9 @@ function processAction (instance, action, component, item, index, urlParam) {
                 instance.$store.commit(UPDATE_DATA, {key: key, value: response.data[key]})
               }
             }
+            if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
           },
-          () => { }
+          () => { if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) } }
         )
       } else {
         api.get(url,
@@ -40,16 +43,19 @@ function processAction (instance, action, component, item, index, urlParam) {
                 instance.$store.commit(UPDATE_DATA, {key: key, value: response.data[key]})
               }
             }
+            if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
           },
-          () => { }
+          () => { if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) } }
         )
       }
       break
     case 'goto':
       instance.$router.push({ path: url })
+      if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
       break
     case 'goback':
       instance.$router.go(-1)
+      if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
       break
     case 'addRow':
       if (data[action.model]) {
@@ -58,6 +64,7 @@ function processAction (instance, action, component, item, index, urlParam) {
       } else {
         instance.$store.commit(UPDATE_DATA, {key: action.model, value: 1})
       }
+      if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
       break
     case 'exec':
       if (!action.use_validate) {
@@ -96,6 +103,19 @@ function execForm (instance, action, component, item, index, urlParam) {
     case 'post':
       api.post(url, payload,
         (response) => {
+          if (action.model) {
+            if (action.model === 'root' || action.model === '') {
+              for (let key in response.data) {
+                if (action.prefix) {
+                  instance.$store.commit(UPDATE_DATA, {key: action.prefix + '_' + key, value: response.data[key]})
+                } else {
+                  instance.$store.commit(UPDATE_DATA, {key: key, value: response.data[key]})
+                }
+              }
+            } else {
+              instance.$store.commit(UPDATE_DATA, {key: action.model, value: response.data})
+            }
+          }
           if (action.noAlert) {
             if (action.redirect) {
               instance.$router.push({ path: action.redirect })
@@ -105,7 +125,9 @@ function execForm (instance, action, component, item, index, urlParam) {
             if (component.type === 'a-table') {
               instance.$store.commit(REFRESH_COMPONENT, {id: component.id})
             }
+            if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
           } else {
+            if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
             instance.$store.commit(SHOW_ALERT, {
               alertType: 'info',
               alertTitle: 'Success',
@@ -122,9 +144,13 @@ function execForm (instance, action, component, item, index, urlParam) {
               }
             })
           }
+          if (action.refreshId) {
+            instance.$store.commit(REFRESH_COMPONENT, {id: action.refreshId})
+          }
         },
         () => {
           console.log('ERROR button click' + component.type + '-' + component.text)
+          if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
         }
       )
       break
@@ -140,7 +166,9 @@ function execForm (instance, action, component, item, index, urlParam) {
             if (component.type === 'a-table') {
               instance.$store.commit(REFRESH_COMPONENT, {id: component.id})
             }
+            if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
           } else {
+            if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
             instance.$store.commit(SHOW_ALERT, {
               alertType: 'info',
               alertTitle: 'Success',
@@ -160,6 +188,7 @@ function execForm (instance, action, component, item, index, urlParam) {
         },
         () => {
           console.log('ERROR button click' + component.type + '-' + component.text)
+          if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
         }
       )
       break
@@ -170,9 +199,9 @@ function execForm (instance, action, component, item, index, urlParam) {
           if (component.type === 'a-table') {
             instance.$store.commit(REFRESH_COMPONENT, {id: component.id})
           }
+          if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
         },
-        () => {
-        }
+        () => { if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) } }
       )
       break
     case 'delete':
@@ -183,11 +212,12 @@ function execForm (instance, action, component, item, index, urlParam) {
             if (component.type === 'a-table') {
               instance.$store.commit(REFRESH_COMPONENT, {id: component.id})
             }
+            if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
           },
-          () => {
-          }
+          () => { if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) } }
         )
       } else {
+        if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
         instance.$store.commit(SHOW_ALERT, {
           alertType: 'yesNo',
           alertTitle: 'Are you sure ?',
@@ -319,7 +349,11 @@ function getObjectOrDefault (data, key, defaultValue) {
   if (result === null) {
     return defaultValue
   } else if (result instanceof Array) {
-    return result.join(', ')
+    if (result[0] && (typeof result[0] === 'string' || result[0] instanceof String)) {
+      return result.join(', ')
+    } else {
+      return result
+    }
   } else {
     return result
   }
