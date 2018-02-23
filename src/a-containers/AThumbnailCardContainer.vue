@@ -11,7 +11,7 @@
       </b-dropdown>
     </div>
     <div class="card" :class="{ 'card-link': (attr.cardAction) }"
-    @click="btnClick.bind(this, attr.cardAction)()">
+    @click="btnClick.bind(this, attr.cardAction, attr)()">
       <b-container>
         <b-row>
           <b-col v-if="(!attr.imagePosition || attr.imagePosition=='left') && attr.imageSrc" style="padding:0px">
@@ -63,7 +63,16 @@ export default {
   methods: {
     btnClick (action, component) {
       if (action === undefined) return
-      this.$util.processAction(this, action, component, null, null, this.$route.query)
+
+      let value = null
+      let itemIndex = null
+      if (this.attr.model) {
+        value = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
+      }
+      if (this.arraySequence) {
+        itemIndex = this.arraySequence[1]
+      }
+      this.$util.processAction(this, action, component, value, itemIndex, this.$route.query)
     }
   }
 }

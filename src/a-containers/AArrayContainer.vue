@@ -1,7 +1,7 @@
 <template>
   <div>
     <template v-for="indexPart in data">
-      <a-container :id="attr.id + '_' + indexPart" :attr="attr" :array-sequence="'_' + indexPart" :key="indexPart"/>
+      <a-container :id="attr.id + '_' + indexPart" :attr="attr" :array-sequence="arraySeq(indexPart)" :key="indexPart"/>
     </template>
   </div>
 </template>
@@ -36,6 +36,13 @@ export default {
   mounted () {
   },
   methods: {
+    arraySeq (indexPart) {
+      if (!this.attr.arrayMode || this.attr.arrayMode === 'sequence') {
+        return '_' + indexPart
+      } else if (this.attr.arrayMode === 'array') {
+        return '.' + (indexPart - 1)
+      }
+    }
   }
 }
 </script>

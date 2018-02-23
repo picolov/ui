@@ -11,7 +11,7 @@
       </b-dropdown>
     </div>
     <div class="card" :class="{ 'card-link': (attr.cardAction) }"
-    @click="btnClick.bind(this, attr.cardAction)()">
+    @click="btnClick.bind(this, attr.cardAction, attr)()">
       <img v-if="(!attr.imagePosition || attr.imagePosition=='top') && attr.imageSrc" class="card-img-top img-fluid" :src="attr.imageSrc" :alt="attr.imageAlt">
       <div class="card-body">
         <span v-if="!attr.imagePosition || attr.imagePosition=='top'" class="card-button-top">{{attr.statusText}}</span>

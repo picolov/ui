@@ -11,7 +11,7 @@
       </b-dropdown>
     </div>
     <div class="card" :class="{ 'card-link': (attr.cardAction) }"
-    @click="btnClick.bind(this, attr.cardAction)()">
+    @click="btnClick.bind(this, attr.cardAction, attr)()">
       <b-container>
         <b-row>
           <b-col v-if="(!attr.imagePosition || attr.imagePosition=='left') && attr.imageSrc" style="padding:0px">

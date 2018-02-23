@@ -18,6 +18,10 @@ function processAction (instance, action, component, item, index, urlParam) {
       instance.$store.commit(REFRESH_COMPONENT, {id: action.componentId})
       if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
       break
+    case 'copyModel':
+      instance.$store.commit(UPDATE_DATA, {key: action.target, value: item})
+      if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+      break
     case 'getData':
       if (action.method && action.method === 'post') {
         api.post(url, {},
