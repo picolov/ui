@@ -19,9 +19,7 @@
           </b-col>
           <b-col>
             <div class="card-body">
-              <span class="card-text" style="display: inline-block; padding-left: 1em;">
-                <a-container :attr="attr" :array-sequence="arraySequence"/>
-              </span>
+              <a-container :attr="attr" :array-sequence="arraySequence"/>
             </div>
           </b-col>
           <b-col v-if="attr.imagePosition=='right' && attr.imageSrc" style="padding:0px">

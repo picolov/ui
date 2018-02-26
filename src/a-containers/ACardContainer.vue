@@ -1,8 +1,8 @@
 <template>
   <div class="card" :class="[{'card-link': (attr.cardAction)}, bgVariant, textVariant]" :style="attr.style"
 @click="btnClick.bind(this, attr.cardAction, attr)()">
-    <div v-if="attr.headerTitle  != undefined || haveMenu" class="card-header" :class="[headerBgVariant, headerTextVariant]">
-      {{ attr.headerTitle | translate}} 
+    <div v-if="titleText  != undefined || haveMenu" class="card-header" :class="[headerBgVariant, headerTextVariant]">
+      {{ titleText }} 
       <b-dropdown v-if="haveMenu && headerMenuStyle == 'dropdown'" class="card-action pull-right" variant="link" size="sm" no-caret>
         <template slot="button-content">
           <i class="fa fa-ellipsis-v"></i> <span class="sr-only">Menu</span>
@@ -62,6 +62,21 @@ export default {
   computed: {
     haveMenu () {
       return (Array.isArray(this.attr.headerMenu) && this.attr.headerMenu.length > 0)
+    },
+    titleText () {
+      let value = null
+      if (this.attr.headerTitle && !this.attr.headerModel) {
+        let result = this.$util.stringInject(this.attr.headerTitle, {data: this.$store.state.generic.data, props: this.$props})
+        value = this.$t(result)
+      } else if (!this.attr.headerTitle && this.attr.headerModel) {
+        value = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.headerModel + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
+        if (this.attr.format === 'date') {
+          value = this.$util.datetimeToString(value)
+        } else if (this.attr.format === 'currency') {
+          value = this.$util.moneyFormat(value, 'Rp', 0, '.', ',')
+        }
+      }
+      return value
     }
   },
   mounted () {
