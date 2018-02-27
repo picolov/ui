@@ -14,7 +14,7 @@
     @click="btnClick.bind(this, attr.cardAction, attr)()">
       <b-container>
         <b-row>
-          <b-col v-if="(!attr.imagePosition || attr.imagePosition=='left') && attr.imageSrc" style="padding:0px">
+          <b-col :cols="attr.imageWidth" v-if="(!attr.imagePosition || attr.imagePosition=='left') && attr.imageSrc" style="padding:0px">
             <div class="image-thumbnail card-img-left" :style="'background: url(' + attr.imageSrc + ') center no-repeat;background-size: cover'"></div>
           </b-col>
           <b-col>
@@ -22,7 +22,7 @@
               <a-container :attr="attr" :array-sequence="arraySequence"/>
             </div>
           </b-col>
-          <b-col v-if="attr.imagePosition=='right' && attr.imageSrc" style="padding:0px">
+          <b-col :cols="attr.imageWidth" v-if="attr.imagePosition=='right' && attr.imageSrc" style="padding:0px">
             <div class="image-thumbnail card-img-right" :style="'background: url(' + attr.imageSrc + ') center no-repeat;background-size: cover'"></div>
           </b-col>
         </b-row>

@@ -31,7 +31,7 @@ export default {
       } else if (!this.attr.text && this.attr.model) {
         value = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
         if (this.attr.format === 'date') {
-          value = this.$util.datetimeToString(value)
+          value = this.$util.datetimeToString(value, this.attr.dateFormat)
         } else if (this.attr.format === 'currency') {
           value = this.$util.moneyFormat(value, 'Rp', 0, '.', ',')
         }

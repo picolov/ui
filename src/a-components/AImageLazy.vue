@@ -45,7 +45,7 @@ export default {
       } else if (!this.attr.textLabel && this.attr.modelLabel) {
         value = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.modelLabel + this.arraySequence + (this.attr.keyLabel ? '.' + this.attr.keyLabel : ''), '')
         if (this.attr.formatLabel === 'date') {
-          value = this.$util.datetimeToString(value)
+          value = this.$util.datetimeToString(value, this.attr.dateFormat)
         } else if (this.attr.formatLabel === 'currency') {
           value = this.$util.moneyFormat(value, 'Rp', 0, '.', ',')
         }
