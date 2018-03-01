@@ -10,54 +10,122 @@ export const HTTP = axios.create({
 HTTP.interceptors.response.use(response => {
   return response
 }, error => {
-  if (error.response.status === 401) {
-    console.log('error 401')
-    // router.push('project')
-    window.location = '/sign-in.html'
+  if (!axios.isCancel(error)) {
+    if (error.response.status === 401) {
+      console.log('error 401')
+      // router.push('project')
+      window.location = '/sign-in.html'
+    }
   }
-  return error
+  throw error
 })
 
 export default {
   get (url, cb, errorCb) {
-    HTTP.get(url, {
+    let CancelToken = axios.CancelToken
+    let source = CancelToken.source()
+    let request = HTTP.get(url, {
+      cancelToken: source.token
     }).then((response) => {
       cb(response)
     }).catch((err) => {
-      errorCb(err.response)
+      if (axios.isCancel(err)) {
+        console.log('Request canceled', err.message)
+      } else {
+        console.log('error: ', err.message)
+        errorCb(err.response)
+      }
     })
+
+    return { request, source }
   },
 
   delete (url, cb, errorCb) {
-    HTTP.delete(url, {
+    let CancelToken = axios.CancelToken
+    let source = CancelToken.source()
+    let request = HTTP.delete(url, {
+      cancelToken: source.token
     }).then((response) => {
       cb(response)
     }).catch((err) => {
-      errorCb(err.response)
+      if (axios.isCancel(err)) {
+        console.log('Request canceled', err.message)
+      } else {
+        console.log('error: ', err.message)
+        errorCb(err.response)
+      }
     })
+
+    return { request, source }
   },
 
   post (url, param, cb, errorCb) {
-    HTTP.post(url, param).then((response) => {
+    let CancelToken = axios.CancelToken
+    let source = CancelToken.source()
+    let request = HTTP.post(url, {
+      cancelToken: source.token,
+      ...param
+    }).then((response) => {
       cb(response)
     }).catch((err) => {
-      errorCb(err)
+      if (axios.isCancel(err)) {
+        console.log('Request canceled', err.message)
+      } else {
+        console.log('error: ', err.message)
+        errorCb(err.response)
+      }
     })
+
+    return { request, source }
   },
 
   put (url, param, cb, errorCb) {
-    HTTP.put(url, param).then((response) => {
+    let CancelToken = axios.CancelToken
+    let source = CancelToken.source()
+    let request = HTTP.put(url, {
+      cancelToken: source.token,
+      ...param
+    }).then((response) => {
       cb(response)
     }).catch((err) => {
-      errorCb(err)
+      if (axios.isCancel(err)) {
+        console.log('Request canceled', err.message)
+      } else {
+        console.log('error: ', err.message)
+        errorCb(err.response)
+      }
     })
+
+    return { request, source }
   },
 
   upload (url, param, config, cb, errorCb) {
-    HTTP.post(url, param, config).then((response) => {
+    let CancelToken = axios.CancelToken
+    let source = CancelToken.source()
+    let request = HTTP.post(url, {
+      cancelToken: source.token,
+      ...param
+    }, config).then((response) => {
       cb(response)
     }).catch((err) => {
-      errorCb(err)
+      if (axios.isCancel(err)) {
+        console.log('Request canceled', err.message)
+      } else {
+        console.log('error: ', err.message)
+        errorCb(err.response)
+      }
     })
+
+    return { request, source }
+  },
+
+  cancel (source) {
+    // cancel the request (the message parameter is optional)
+    source.cancel('Operation canceled by the user.')
+  },
+
+  isCancel (error) {
+    // cancel the request (the message parameter is optional)
+    return axios.isCancel(error)
   }
 }
