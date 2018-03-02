@@ -1,18 +1,19 @@
 <template>
-  <b-form-select 
+  <v-select 
     class="a-dropDown"
     :id="attr.id" 
     :name="attr.model + arraySequence" 
     :value="dropdownValue(data)" 
     @input="dropdownInput(attr.model + arraySequence, attr, $event)" 
-    :options="attr.data ? attr.data : this.$store.state.generic.options[attr.source.model]" 
+    :options="optionList" 
     :style="attr.style" 
+    :label="attr.source.text"
     :placeholder="attr.placeholder">
-  </b-form-select>
+  </v-select>
 </template>
 
 <script>
-import { UPDATE_DATA, UPDATE_OPTION, REFRESH_COMPONENT } from '../store/mutation-types'
+import { UPDATE_DATA, REFRESH_COMPONENT } from '../store/mutation-types'
 import api from '../api/common'
 
 export default {
@@ -31,9 +32,17 @@ export default {
   },
   data () {
     return {
+      optionList: []
     }
   },
   computed: {
+    refreshOn () {
+      if (this.attr.refreshOn) {
+        return this.$store.state.generic.data[this.attr.refreshOn]
+      } else {
+        return false
+      }
+    },
     data: {
       get () {
         return this.$store.state.generic.data[this.attr.model + this.arraySequence]
@@ -43,61 +52,51 @@ export default {
       }
     }
   },
-  mounted () {
-    if (this.attr.source) {
-      api.get('generic/class/' + this.attr.source.model,
-        (response) => {
-          let optionList = []
-          for (let i = 0; i < response.data.length; i++) {
-            let option = response.data[i]
-            option.value = option[this.attr.source.value]
-            option.text = option[this.attr.source.text]
-            optionList.push(option)
-          }
-          this.$store.commit(UPDATE_OPTION, {key: this.attr.source.model, option: optionList})
-        },
-        () => { }
-      )
+  watch: {
+    refreshOn: {
+      handler: function (newVal, oldVal) {
+        if (oldVal !== newVal) {
+          this.data = null
+          this.fetchOption()
+        }
+      }
     }
   },
+  mounted () {
+    this.fetchOption()
+  },
   methods: {
-    dropdownValue (value) {
-      if (value !== null && typeof value === 'object') {
-        if (value._id) return value._id
-        else if (value.id) return value.id
-        else if (value.value) return value.value
-        else return value
-      } else {
-        return value
+    fetchOption () {
+      if (this.attr.source) {
+        if (this.attr.source.model && !this.attr.source.url) this.attr.source.url = 'generic/class/' + this.attr.source.model
+        if (this.attr.source.method && this.attr.source.method === 'post') {
+          api.post(this.$util.stringInject(this.attr.source.url, {data: this.$store.state.generic.data, props: this.$props}), {},
+            (response) => {
+              this.optionList = response.data
+            },
+            () => {
+              this.optionList = []
+            }
+          )
+        } else {
+          api.get(this.$util.stringInject(this.attr.source.url, {data: this.$store.state.generic.data, props: this.$props}),
+            (response) => {
+              this.optionList = response.data
+            },
+            () => {
+              this.optionList = []
+            }
+          )
+        }
       }
     },
+    dropdownValue (value) {
+      return value
+    },
     dropdownInput (model, component, value) {
-      if (component.source) {
-        let option = this.$store.state.generic.options[component.source.model]
-        if (option) {
-          for (let i = 0; i < option.length; i++) {
-            if (option[i].value === value) {
-              this.data = option[i]
-              break
-            }
-          }
-          if (component.refreshId) {
-            this.$store.commit(REFRESH_COMPONENT, {id: component.refreshId})
-          }
-        }
-      } else if (component.data) {
-        let option = component.data
-        if (option) {
-          for (let i = 0; i < option.length; i++) {
-            if (option[i].value === value) {
-              this.data = option[i]
-              break
-            }
-          }
-          if (component.refreshId) {
-            this.$store.commit(REFRESH_COMPONENT, {id: component.refreshId})
-          }
-        }
+      this.data = value
+      if (component.refreshId) {
+        this.$store.commit(REFRESH_COMPONENT, {id: component.refreshId})
       }
     }
   }

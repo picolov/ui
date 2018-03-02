@@ -1,20 +1,16 @@
 <template>
-  <div>
-    <b-img :src="data?data.imgUrl:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8Vw8AAmEBb87E6jIAAAAASUVORK5CYII='" fluid style="float: left;width: 130px; height: 80px"/>
-    <v-select 
-      :id="attr.id" 
-      :value="dropdownValue(data)" 
-      @input="dropdownInput(attr.model + arraySequence, attr, $event)" 
-      :options="optionList" 
-      :label="attr.source.text"
-      :style="attr.style"
-      class="a-dropDownImage">
-      <template slot="option" slot-scope="option">
-          <b-img fluid :src="option.imgUrl" style="width: 130px; height: 80px"/>
-          {{ option.name }}
-      </template>
-    </v-select>
-  </div>
+  <v-select 
+    class="a-dropDown"
+    :id="attr.id" 
+    :name="attr.model + arraySequence" 
+    :value="dropdownValue(data)" 
+    @input="dropdownInput(attr.model + arraySequence, attr, $event)" 
+    :options="optionList"
+    :label="attr.source.text"
+    multiple
+    :style="attr.style" 
+    :placeholder="attr.placeholder">
+  </v-select>
 </template>
 
 <script>
@@ -22,7 +18,7 @@ import { UPDATE_DATA, REFRESH_COMPONENT } from '../store/mutation-types'
 import api from '../api/common'
 
 export default {
-  name: 'a-dropDownImage',
+  name: 'a-dropDown',
   props: {
     attr: {
       type: Object,
@@ -41,12 +37,14 @@ export default {
     }
   },
   computed: {
-    refreshOn () {
-      if (this.attr.refreshOn) {
-        return this.$store.state.generic.data[this.attr.refreshOn]
-      } else {
-        return false
+    theValue () {
+      let value = []
+      if (this.data) {
+        for (let i = 0; i < this.data.length; i++) {
+          value.push(this.data[i])
+        }
       }
+      return value
     },
     data: {
       get () {
@@ -54,16 +52,6 @@ export default {
       },
       set (value) {
         this.$store.commit(UPDATE_DATA, {key: this.attr.model + this.arraySequence, value: value})
-      }
-    }
-  },
-  watch: {
-    refreshOn: {
-      handler: function (newVal, oldVal) {
-        if (oldVal !== newVal) {
-          this.data = null
-          this.fetchOption()
-        }
       }
     }
   },
@@ -96,12 +84,33 @@ export default {
       }
     },
     dropdownValue (value) {
-      return value
+      return this.theValue
     },
     dropdownInput (model, component, value) {
-      this.data = value
-      if (component.refreshId) {
-        this.$store.commit(REFRESH_COMPONENT, {id: component.refreshId})
+      if (this.data) {
+        let checkSame = 0
+        for (let i = 0; i < value.length; i++) {
+          for (let j = 0; j < this.data.length; j++) {
+            if (value[i][this.attr.source.value] === this.data[j][this.attr.source.value]) {
+              checkSame++
+            }
+          }
+        }
+        if (checkSame !== value.length) {
+          if (component.source) {
+            this.data = value
+            if (component.refreshId) {
+              this.$store.commit(REFRESH_COMPONENT, {id: component.refreshId})
+            }
+          }
+        }
+      } else {
+        if (component.source) {
+          this.data = value
+          if (component.refreshId) {
+            this.$store.commit(REFRESH_COMPONENT, {id: component.refreshId})
+          }
+        }
       }
     }
   }
@@ -109,5 +118,7 @@ export default {
 </script>
 
 <style lang="scss">
+.a-dropDown {
+}
 </style>
 

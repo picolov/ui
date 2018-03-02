@@ -62,29 +62,7 @@ export default {
   },
   mounted () {
     this.$refs[this.attr.id].$mapCreated.then(() => {
-      if (this.count > 0 && this.getPolygonFrom(1) && this.getPolygonFrom(1).length > 0) {
-        let bounds = new window.google.maps.LatLngBounds()
-        for (let num = 1; num <= this.count; num++) {
-          let polygonArray = this.getPolygonFrom(num)
-          if (polygonArray != null) {
-            for (let idx = 0; idx < polygonArray.length; idx++) {
-              if (polygonArray[idx] == null) continue
-              let myLatLng = new window.google.maps.LatLng({ lat: polygonArray[idx].lat, lng: polygonArray[idx].lng })
-              bounds.extend(myLatLng)
-            }
-          }
-          polygonArray = this.getPolygonTo(num)
-          if (polygonArray != null) {
-            for (let idx = 0; idx < polygonArray.length; idx++) {
-              if (polygonArray[idx] == null) continue
-              let myLatLng = new window.google.maps.LatLng({ lat: polygonArray[idx].lat, lng: polygonArray[idx].lng })
-              bounds.extend(myLatLng)
-            }
-          }
-        }
-        this.$refs[this.attr.id].fitBounds(bounds)
-        Vue.$gmapDefaultResizeBus.$emit('resize')
-      }
+      this.refreshMap()
     })
   },
   watch: {
@@ -125,6 +103,31 @@ export default {
     }
   },
   methods: {
+    refreshMap () {
+      if (this.count > 0 && this.getPolygonFrom(1) && this.getPolygonFrom(1).length > 0) {
+        let bounds = new window.google.maps.LatLngBounds()
+        for (let num = 1; num <= this.count; num++) {
+          let polygonArray = this.getPolygonFrom(num)
+          if (polygonArray != null) {
+            for (let idx = 0; idx < polygonArray.length; idx++) {
+              if (polygonArray[idx] == null) continue
+              let myLatLng = new window.google.maps.LatLng({ lat: polygonArray[idx].lat, lng: polygonArray[idx].lng })
+              bounds.extend(myLatLng)
+            }
+          }
+          polygonArray = this.getPolygonTo(num)
+          if (polygonArray != null) {
+            for (let idx = 0; idx < polygonArray.length; idx++) {
+              if (polygonArray[idx] == null) continue
+              let myLatLng = new window.google.maps.LatLng({ lat: polygonArray[idx].lat, lng: polygonArray[idx].lng })
+              bounds.extend(myLatLng)
+            }
+          }
+        }
+        this.$refs[this.attr.id].fitBounds(bounds)
+        Vue.$gmapDefaultResizeBus.$emit('resize')
+      }
+    },
     getPolygonFrom (index) {
       if (this.attr.keyFrom) {
         let result = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.modelFrom + this.arraySequence + '_' + index + (this.attr.keyFrom ? '.' + this.attr.keyFrom : ''), [])

@@ -126,8 +126,6 @@ export default {
         if (this.attr.model) {
           this.totalRows = 0
           if (this.data) this.totalRows = this.data.length
-          console.log(this.data)
-          if (this.data) console.log(this.data.length)
           return this.data
         } else {
           if (this.attr.method === 'get') {

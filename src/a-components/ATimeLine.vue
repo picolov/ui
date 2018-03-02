@@ -38,7 +38,7 @@ export default {
         value = this.$t(result)
       } else if (!pathUnit.text && pathUnit.model) {
         value = this.$util.getObjectOrDefault(this.$store.state.generic.data, pathUnit.model + this.arraySequence + (pathUnit.key ? '.' + pathUnit.key : ''), '')
-        console.log(pathUnit.model + this.arraySequence + (pathUnit.key ? '.' + pathUnit.key : ''), value)
+        // console.log(pathUnit.model + this.arraySequence + (pathUnit.key ? '.' + pathUnit.key : ''), value)
         if (pathUnit.format === 'date') {
           value = this.$util.datetimeToString(value, pathUnit.dateFormat)
         } else if (pathUnit.format === 'currency') {

@@ -49,7 +49,7 @@
 <script>
 import {_} from 'vue-underscore'
 import { mapState, mapMutations } from 'vuex'
-import { SET_ALERT_SHOW, SET_MAPPICKER_SHOW, SET_PAGE, UPDATE_DATA_COLLECTION, CLEAR_DATA } from '../store/mutation-types'
+import { SET_ALERT_SHOW, SET_MAPPICKER_SHOW, SET_PAGE, UPDATE_DATA_COLLECTION, CLEAR_DATA, REFRESH_COMPONENT } from '../store/mutation-types'
 import api from '../api/common'
 
 export default {
@@ -145,6 +145,9 @@ export default {
                       (response) => {
                         this.$store.commit(UPDATE_DATA_COLLECTION, {collection: response.data, prefix: action.prefix})
                         this.attr = page.container
+                        if (action.refreshId) {
+                          this.$store.commit(REFRESH_COMPONENT, {id: action.refreshId})
+                        }
                       },
                       () => {
                         this.attr = page.container
@@ -155,6 +158,9 @@ export default {
                       (response) => {
                         this.$store.commit(UPDATE_DATA_COLLECTION, {collection: response.data, prefix: action.prefix})
                         this.attr = page.container
+                        if (action.refreshId) {
+                          this.$store.commit(REFRESH_COMPONENT, {id: action.refreshId})
+                        }
                       },
                       () => {
                         this.attr = page.container
