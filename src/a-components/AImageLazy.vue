@@ -5,6 +5,7 @@
       :style="attr.style" 
       :src="imgSrc" 
       :rounded="attr.shape==='circle'?'circle':'0'" 
+      fluid
       :width="attr.imgWidth" 
       :height="attr.imgHeight" />
     <label v-if="attr.modelLabel" :style="[{margin: 0}]">{{labelText}}</label>

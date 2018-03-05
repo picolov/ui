@@ -30,10 +30,21 @@ export default {
         value = this.$t(result)
       } else if (!this.attr.text && this.attr.model) {
         value = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
-        if (this.attr.format === 'date') {
-          value = this.$util.datetimeToString(value, this.attr.dateFormat)
-        } else if (this.attr.format === 'currency') {
-          value = this.$util.moneyFormat(value, 'Rp', 0, '.', ',')
+        if (this.attr.listKey && value.constructor === Array) {
+          let result = null
+          let separator = ', '
+          if (this.attr.listSeparator) separator = this.attr.listSeparator
+          for (let i = 0; i < value.length; i++) {
+            if (result) result += separator + value[i][this.attr.listKey]
+            else result = value[i][this.attr.listKey]
+          }
+          value = result
+        } else {
+          if (this.attr.format === 'date') {
+            value = this.$util.datetimeToString(value, this.attr.dateFormat)
+          } else if (this.attr.format === 'currency') {
+            value = this.$util.moneyFormat(value, 'Rp', 0, '.', ',')
+          }
         }
       }
       return value

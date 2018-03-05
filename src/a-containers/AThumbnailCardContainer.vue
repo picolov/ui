@@ -14,16 +14,16 @@
     @click="btnClick.bind(this, attr.cardAction, attr)()">
       <b-container>
         <b-row>
-          <b-col :cols="attr.imageWidth" v-if="(!attr.imagePosition || attr.imagePosition=='left') && attr.imageSrc" style="padding:0px">
-            <div class="image-thumbnail card-img-left" :style="'background: url(' + attr.imageSrc + ') center no-repeat;background-size: cover'"></div>
+          <b-col :cols="attr.imageWidth" v-if="(!attr.imagePosition || attr.imagePosition=='left') && imgSrc" style="padding:0px">
+            <div class="image-thumbnail card-img-left" :style="'background: url(' + imgSrc + ') center no-repeat;background-size: cover'"></div>
           </b-col>
           <b-col>
             <div class="card-body">
               <a-container :attr="attr" :array-sequence="arraySequence"/>
             </div>
           </b-col>
-          <b-col :cols="attr.imageWidth" v-if="attr.imagePosition=='right' && attr.imageSrc" style="padding:0px">
-            <div class="image-thumbnail card-img-right" :style="'background: url(' + attr.imageSrc + ') center no-repeat;background-size: cover'"></div>
+          <b-col :cols="attr.imageWidth" v-if="attr.imagePosition=='right' && imgSrc" style="padding:0px">
+            <div class="image-thumbnail card-img-right" :style="'background: url(' + imgSrc + ') center no-repeat;background-size: cover'"></div>
           </b-col>
         </b-row>
       </b-container>
@@ -51,10 +51,20 @@ export default {
   },
   data () {
     return {
-      imageClassPosition: this.attr.imageSrc === undefined ? '' : 'image-' + (this.attr.imagePosition === undefined ? 'left' : this.attr.imagePosition)
+      imageClassPosition: this.imgSrc === undefined ? '' : 'image-' + (this.attr.imagePosition === undefined ? 'left' : this.attr.imagePosition)
     }
   },
   computed: {
+    imgSrc () {
+      if (this.attr.imageSrc) {
+        return this.attr.imageSrc
+      } else if (this.attr.imageKey) {
+        let imgSrc = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.model + this.arraySequence + '.' + this.attr.imageKey, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8Vw8AAmEBb87E6jIAAAAASUVORK5CYII=')
+        return imgSrc
+      } else {
+        return null
+      }
+    }
   },
   mounted () {
   },
