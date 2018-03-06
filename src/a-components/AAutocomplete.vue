@@ -126,7 +126,6 @@ export default {
   methods: {
     onKeyUp () {
       this.onSearch = true
-      this.isLoading = true
 
       if (!this.query) {
         return this.reset()
@@ -135,6 +134,8 @@ export default {
       if (this.minChars && this.query.length < this.minChars) {
         return
       }
+
+      this.isLoading = true
 
       // Clear the timeout if it has already been set.
       // This will prevent the previous task from executing

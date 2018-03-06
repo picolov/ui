@@ -1,10 +1,11 @@
 import { UPDATE_DATA, SHOW_ALERT, REFRESH_COMPONENT } from './store/mutation-types'
 import moment from 'moment'
 import api from './api/common'
+import {_} from 'vue-underscore'
 
 export default {
   install: function (Vue) {
-    Object.defineProperty(Vue.prototype, '$util', { value: {stringInject, getObjectOrDefault, getObjectFromString, orderComponentList, uuid, evaluateString, processAction, datetimeToString, moneyFormat} })
+    Object.defineProperty(Vue.prototype, '$util', { value: {stringInject, getObjectOrDefault, getObjectFromString, orderComponentList, uuid, evaluateString, processAction, datetimeToString, moneyFormat, getQueryStringObject, deepSearch, getComponents} })
   }
 }
 
@@ -423,4 +424,101 @@ function moneyFormat (number, currency, decPlaces, thouSeparator, decSeparator) 
   let i = parseInt(number = Math.abs(+number || 0).toFixed(decPlaces)) + ''
   let j = i.length > 3 ? i.length % 3 : 0
   return (currency ? currency + ' ' : '') + sign + (j ? i.substr(0, j) + thouSeparator : '') + i.substr(j).replace(/(\d{3})(?=\d)/g, '$1' + thouSeparator) + (decPlaces ? decSeparator + Math.abs(number - i).toFixed(decPlaces).slice(2) : '')
+}
+
+/**
+ * Get the value of a querystring
+ * @param  {String} url   The URL to get the value from
+ * @return {Object}       The object of query value
+ */
+function getQueryStringObject (url) {
+  let queryString = url.substring(url.indexOf('?') + 1)
+
+  let params = {}
+  let queries
+  let temp
+  let i
+  let l
+  // Split into key/value pairs
+  queries = queryString.split('&')
+  // Convert the array of strings into an object
+  for (i = 0, l = queries.length; i < l; i++) {
+    temp = queries[i].split('=')
+    params[temp[0]] = temp[1]
+  }
+  return params
+}
+
+/**
+ * Get the list of object that have property with same key and value pair
+ * @param  {String} items          list of object
+ * @param  {String} attrs          key and value pair for criteria of object
+ * @param  {String} applyFunction  the function callback that want to applied to object
+ * @param  {String} findFirst      flag to stop on first match
+ * @return {Object}                The object of query value
+ */
+function deepSearch (items, attrs, applyFunction = undefined, findFirst = false) {
+  return traverse(items, findFirst, (value) => {
+    for (var key in attrs) {
+      if (!_.isUndefined(value)) {
+        if (attrs[key] !== value[key]) {
+          return false
+        }
+      }
+    }
+
+    if (typeof applyFunction === 'function') {
+      applyFunction(value)
+    }
+    return true
+  })
+}
+
+/**
+ * Get the list of a-component from layout
+ * @param  {String} items          layout of page
+ * @param  {String} applyFunction  the function callback that want to applied to object
+ * @param  {String} findFirst      flag to stop on first match
+ * @return {Object}                The object of query value
+ */
+
+function getComponents (items, applyFunction = undefined, findFirst = false) {
+  return traverse(items, findFirst, (value) => {
+    if (!_.isUndefined(value)) {
+      if (!value.hasOwnProperty('type') || value['type'].substring(0, 2) !== 'a-') {
+        return false
+      }
+    }
+
+    if (typeof applyFunction === 'function') {
+      applyFunction(value)
+    }
+    return true
+  })
+}
+
+function traverse (value, findFirst, matchFunction) {
+  var result = []
+
+  _.forEach(value, function (val) {
+    if (matchFunction(val)) {
+      result.push(val)
+      if (findFirst) {
+        return false
+      }
+    }
+
+    if (_.isObject(val) || _.isArray(val)) {
+      let traverseResult = traverse(val, findFirst, matchFunction)
+      if (traverseResult.length > 0) {
+        result = [...result, ...traverseResult]
+      }
+    }
+
+    if (result) {
+      return false
+    }
+  })
+
+  return result
 }

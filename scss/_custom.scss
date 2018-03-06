@@ -62,6 +62,7 @@
 .card.card-link{
     cursor: pointer;
 }
+
 .card.card-link:hover{
     opacity: 0.9;
 }
@@ -125,6 +126,7 @@
     color: black;
     font-weight: bold;
     background-color: #ffffff;
+    min-width: 100px;
 }
 
 .btn:hover {
@@ -138,6 +140,25 @@ input,
 
 .modal-content {
     border-radius: 10px;
+}
+
+.modal-header{
+    border-bottom: 0px;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-header .close {    
+    right: 0;
+    position: absolute;
+    margin: 0;
+}
+
+.modal-footer{
+    border-top: 0px;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 15px;
 }
 
 .pac-container {
