@@ -9,9 +9,9 @@ export default {
   }
 }
 
-function processAction (instance, action, component, item, index, urlParam) {
+function processAction (instance, action, component, item, index, urlParam, dataId) {
   if (action.showLoading) { instance.$bus.$emit('show-full-loading', { key: 'fetchLayout' }) }
-  let data = instance.$store.state.generic.data
+  let data = instance.$store.state.generic.data[dataId]
   let mapInject = {data: data, item: item, urlParam: urlParam, index: index, component: component, action: action}
   let url = stringInject(action.url, mapInject)
   switch (action.type) {
@@ -20,7 +20,7 @@ function processAction (instance, action, component, item, index, urlParam) {
       if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
       break
     case 'copyModel':
-      instance.$store.commit(UPDATE_DATA, {key: action.target, value: item})
+      instance.$store.commit(UPDATE_DATA, {id: dataId, key: action.target, value: item})
       if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
       break
     case 'getData':
@@ -29,9 +29,9 @@ function processAction (instance, action, component, item, index, urlParam) {
           (response) => {
             for (let key in response.data) {
               if (action.prefix) {
-                instance.$store.commit(UPDATE_DATA, {key: action.prefix + '_' + key, value: response.data[key]})
+                instance.$store.commit(UPDATE_DATA, {id: dataId, key: action.prefix + '_' + key, value: response.data[key]})
               } else {
-                instance.$store.commit(UPDATE_DATA, {key: key, value: response.data[key]})
+                instance.$store.commit(UPDATE_DATA, {id: dataId, key: key, value: response.data[key]})
               }
             }
             if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
@@ -43,9 +43,9 @@ function processAction (instance, action, component, item, index, urlParam) {
           (response) => {
             for (let key in response.data) {
               if (action.prefix) {
-                instance.$store.commit(UPDATE_DATA, {key: action.prefix + '_' + key, value: response.data[key]})
+                instance.$store.commit(UPDATE_DATA, {id: dataId, key: action.prefix + '_' + key, value: response.data[key]})
               } else {
-                instance.$store.commit(UPDATE_DATA, {key: key, value: response.data[key]})
+                instance.$store.commit(UPDATE_DATA, {id: dataId, key: key, value: response.data[key]})
               }
             }
             if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
@@ -65,15 +65,15 @@ function processAction (instance, action, component, item, index, urlParam) {
     case 'addRow':
       if (data[action.model]) {
         let count = data[action.model] + 1
-        instance.$store.commit(UPDATE_DATA, {key: action.model, value: count})
+        instance.$store.commit(UPDATE_DATA, {id: dataId, key: action.model, value: count})
       } else {
-        instance.$store.commit(UPDATE_DATA, {key: action.model, value: 1})
+        instance.$store.commit(UPDATE_DATA, {id: dataId, key: action.model, value: 1})
       }
       if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
       break
     case 'exec':
       if (!action.use_validate) {
-        execForm(instance, action, component, item, index, urlParam)
+        execForm(instance, action, component, item, index, urlParam, dataId)
       } else {
         instance.$validator.validateAll().then((isValid) => {
           if (!isValid) {
@@ -81,15 +81,15 @@ function processAction (instance, action, component, item, index, urlParam) {
             console.log('Correct them errors!')
             return
           }
-          execForm(instance, action, component, item, index, urlParam)
+          execForm(instance, action, component, item, index, urlParam, dataId)
         })
       }
       break
   }
 }
 
-function execForm (instance, action, component, item, index, urlParam) {
-  let data = instance.$store.state.generic.data
+function execForm (instance, action, component, item, index, urlParam, dataId) {
+  let data = instance.$store.state.generic.data[dataId]
   let mapInject = {data: data, item: item, urlParam: urlParam, index: index, component: component, action: action}
   let url = stringInject(action.url, mapInject)
   let payload = {}
@@ -113,13 +113,13 @@ function execForm (instance, action, component, item, index, urlParam) {
             if (action.model === 'root' || action.model === '') {
               for (let key in response.data) {
                 if (action.prefix) {
-                  instance.$store.commit(UPDATE_DATA, {key: action.prefix + '_' + key, value: response.data[key]})
+                  instance.$store.commit(UPDATE_DATA, {id: dataId, key: action.prefix + '_' + key, value: response.data[key]})
                 } else {
-                  instance.$store.commit(UPDATE_DATA, {key: key, value: response.data[key]})
+                  instance.$store.commit(UPDATE_DATA, {id: dataId, key: key, value: response.data[key]})
                 }
               }
             } else {
-              instance.$store.commit(UPDATE_DATA, {key: action.model, value: response.data})
+              instance.$store.commit(UPDATE_DATA, {id: dataId, key: action.model, value: response.data})
             }
           }
           if (action.noAlert) {
@@ -256,7 +256,7 @@ function datetimeToString (datetime, formatParam) {
   return localTime.format(format)
 }
 
-function stringInject (str, data) {
+function stringInject (str, data, dataId) {
   if (typeof str === 'string' && (data instanceof Array)) {
     return str.replace(/({\d})/g, function (i) {
       let params = i.replace(/{/, '').replace(/}/, '')
@@ -271,7 +271,7 @@ function stringInject (str, data) {
         } else {
           statement = replaceAll('#', value, statement)
         }
-        return evaluateString(statement, null, null, null)
+        return evaluateString(statement, null, null, null, dataId)
       } else {
         return i
       }
@@ -291,7 +291,7 @@ function stringInject (str, data) {
           } else {
             statement = replaceAll('#', value, statement)
           }
-          return evaluateString(statement, null, null, null)
+          return evaluateString(statement, null, null, null, dataId)
         } else {
           return i
         }
@@ -398,11 +398,11 @@ function uuid () {
   })
 }
 
-function evaluateString (strStatement, component, item, index) {
+function evaluateString (strStatement, component, item, index, dataId) {
   // eslint-disable-next-line no-unused-vars
   let data = []
   if (this && this.$store != null) {
-    data = this.$store.state.generic.data
+    data = this.$store.state.generic.data[dataId]
   }
   // eslint-disable-next-line no-eval
   return eval(strStatement)

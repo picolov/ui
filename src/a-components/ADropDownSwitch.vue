@@ -39,6 +39,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   data () {
@@ -52,7 +56,7 @@ export default {
   },
   methods: {
     switchValue (optionModel) {
-      let value = this.$store.state.generic.data[optionModel + this.arraySequence]
+      let value = this.$store.state.generic.data[this.dataId][optionModel + this.arraySequence]
       if (value !== null && typeof value === 'object') {
         if (value._id) return value._id
         else if (value.id) return value.id
@@ -63,11 +67,11 @@ export default {
       }
     },
     switchInput (optionModel, component, value) {
-      this.$store.commit(UPDATE_DATA, {key: optionModel + this.arraySequence, value: value})
+      this.$store.commit(UPDATE_DATA, {id: this.dataId, key: optionModel + this.arraySequence, value: value})
     },
     switchChanged (action, component, item, itemIndex) {
       if (action === undefined) return
-      this.$util.processAction(this, action, component, item, itemIndex, this.$route.query)
+      this.$util.processAction(this, action, component, item, itemIndex, this.$route.query, this.dataId)
     }
   }
 }

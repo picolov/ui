@@ -40,6 +40,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   data () {
@@ -54,7 +58,7 @@ export default {
   methods: {
     btnClick (action, component) {
       if (action === undefined) return
-      this.$util.processAction(this, action, component, null, null, this.$route.query)
+      this.$util.processAction(this, action, component, null, null, this.$route.query, this.dataId)
     }
   }
 }

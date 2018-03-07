@@ -54,6 +54,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   mounted () {
@@ -109,7 +113,7 @@ export default {
   },
   computed: {
     count () {
-      let result = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.modelCount + this.arraySequence, 0)
+      let result = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.modelCount + this.arraySequence, 0)
       return result
     },
     refreshComponentList () {
@@ -119,18 +123,18 @@ export default {
   methods: {
     getPolygonFrom () {
       if (this.attr.keyFrom) {
-        let result = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.modelFrom + this.arraySequence + (this.attr.keyFrom ? '.' + this.attr.keyFrom : ''), [])
+        let result = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.modelFrom + this.arraySequence + (this.attr.keyFrom ? '.' + this.attr.keyFrom : ''), [])
         return result
       } else {
-        return this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.modelFrom + this.arraySequence, [])
+        return this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.modelFrom + this.arraySequence, [])
       }
     },
     getPolygonTo () {
       if (this.attr.keyTo) {
-        let result = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.modelTo + this.arraySequence + (this.attr.keyTo ? '.' + this.attr.keyTo : ''), [])
+        let result = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.modelTo + this.arraySequence + (this.attr.keyTo ? '.' + this.attr.keyTo : ''), [])
         return result
       } else {
-        return this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.modelTo + this.arraySequence, [])
+        return this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.modelTo + this.arraySequence, [])
       }
     },
     getMiddlePoint (pathList) {

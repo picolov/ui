@@ -23,7 +23,7 @@
                 <span style="font-weight: bold;">{{ attr.title | translate }}</span><br/>
                 <span>{{ attr.text | translate }}</span> <br/>
                 <div v-if="attr.rating">
-                  <a-inputRating :attr="attr.rating" :array-sequence="arraySequence"></a-inputRating>
+                  <a-inputRating :attr="attr.rating" :array-sequence="arraySequence" :data-id="dataId"></a-inputRating>
                 </div>
               </span>
             </div>
@@ -53,6 +53,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   data () {
@@ -67,7 +71,7 @@ export default {
   methods: {
     btnClick (action, component) {
       if (action === undefined) return
-      this.$util.processAction(this, action, component, null, null, this.$route.query)
+      this.$util.processAction(this, action, component, null, null, this.$route.query, this.dataId)
     }
   }
 }

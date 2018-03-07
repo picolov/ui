@@ -27,13 +27,17 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   computed: {
     labelText () {
       let value = ''
       if (this.attr.text && !this.attr.model) {
-        value = this.$t(this.$util.stringInject(this.attr.text, {data: this.$store.state.generic.data}))
+        value = this.$t(this.$util.stringInject(this.attr.text, {data: this.$store.state.generic.data[this.dataId]}))
       } else if (!this.attr.text && this.attr.model) {
         value = this.getObjectFromString(this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
         if (this.attr.format === 'date') {
@@ -45,7 +49,7 @@ export default {
   },
   methods: {
     getObjectFromString (key, defaultValue) {
-      let result = this.$util.getObjectFromString(this.$store.state.generic.data, key)
+      let result = this.$util.getObjectFromString(this.$store.state.generic.data[this.dataId], key)
       if (result === null) {
         return defaultValue
       } else if (result instanceof Array) {

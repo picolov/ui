@@ -5,6 +5,7 @@
       :is="component.type" 
       :attr="component"
       :array-sequence="arraySequence"
+      :data-id="dataId"
       style="margin-right: 0.5em"/>
   </div>
 </template>
@@ -25,6 +26,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   data () {

@@ -1,6 +1,6 @@
 <template>
   <div class="animated fadeIn">
-    <component v-if="attr !== null" :is="attr.type" :attr="attr"/>
+    <component v-if="attr !== null" :is="attr.type" :attr="attr" :data-id="dataId"/>
     <!-- Modal Component -->
     <b-modal id="info-alert" v-model="infoAlertShow" @ok="okAlertClick" centered :title="alertTitle" :hide-header-close="true" :ok-only="true" :no-close-on-backdrop="true">
       <h3>{{alertMessage}}</h3>
@@ -58,6 +58,7 @@ export default {
   },
   data () {
     return {
+      dataId: 'root',
       attr: null,
       locationSearch: '',
       locationPicked: {lat: 0, lng: 0},
@@ -119,7 +120,6 @@ export default {
     fetchData () {
       // this is set to be null so that the generic-container will got re-mounted, if not then if will not see that it need to be re-mounted, because changing props doesn't count
       this.attr = null
-      this.$store.commit(CLEAR_DATA)
       this.$bus.$emit('show-full-loading', { key: 'fetchLayout' })
       // load layout
       api.get(
@@ -130,7 +130,9 @@ export default {
           if (page.lang) {
             this.$store.dispatch('loadLang', {page: page.lang, instance: this})
           }
-          this.id = page.id
+          this.$store.commit(CLEAR_DATA, {id: this.dataId})
+          this.dataId = page.id
+          this.$store.commit(CLEAR_DATA, {id: this.dataId})
           if (page.title && page.lang) this.$store.commit(SET_PAGE, {title: page.title, lang: page.lang})
           // get init action
           if (page.init && page.init.length > 0) {
@@ -143,7 +145,7 @@ export default {
                   if (action.method && action.method === 'post') {
                     api.post(url, {},
                       (response) => {
-                        this.$store.commit(UPDATE_DATA_COLLECTION, {collection: response.data, prefix: action.prefix})
+                        this.$store.commit(UPDATE_DATA_COLLECTION, {id: this.dataId, collection: response.data, prefix: action.prefix})
                         this.attr = page.container
                         if (action.refreshId) {
                           this.$store.commit(REFRESH_COMPONENT, {id: action.refreshId})
@@ -156,7 +158,7 @@ export default {
                   } else {
                     api.get(url,
                       (response) => {
-                        this.$store.commit(UPDATE_DATA_COLLECTION, {collection: response.data, prefix: action.prefix})
+                        this.$store.commit(UPDATE_DATA_COLLECTION, {id: this.dataId, collection: response.data, prefix: action.prefix})
                         this.attr = page.container
                         if (action.refreshId) {
                           this.$store.commit(REFRESH_COMPONENT, {id: action.refreshId})
@@ -169,7 +171,7 @@ export default {
                   }
                   break
                 case 'initData':
-                  this.$store.commit(UPDATE_DATA_COLLECTION, {collection: action.keyVal})
+                  this.$store.commit(UPDATE_DATA_COLLECTION, {id: this.dataId, collection: action.keyVal})
                   this.attr = page.container
                   break
               }

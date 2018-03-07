@@ -21,7 +21,7 @@
       <h4 v-if="attr.bodyTitle != undefined" class="card-title">
         {{ attr.bodyTitle | translate}} 
       </h4>
-      <a-container :attr="attr" :array-sequence="arraySequence"/>
+      <a-container :attr="attr" :array-sequence="arraySequence" :data-id="dataId"/>
     </div>
     <div v-if="attr.footerTitle != undefined" class="card-footer" :class="[footerBgVariant, footerTextVariant]">
       {{ attr.footerTitle | translate}} 
@@ -45,6 +45,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   data () {
@@ -66,10 +70,10 @@ export default {
     titleText () {
       let value = null
       if (this.attr.headerTitle && !this.attr.headerModel) {
-        let result = this.$util.stringInject(this.attr.headerTitle, {data: this.$store.state.generic.data, props: this.$props})
+        let result = this.$util.stringInject(this.attr.headerTitle, {data: this.$store.state.generic.data[this.dataId], props: this.$props})
         value = this.$t(result)
       } else if (!this.attr.headerTitle && this.attr.headerModel) {
-        value = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.headerModel + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
+        value = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.headerModel + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
         if (this.attr.format === 'date') {
           value = this.$util.datetimeToString(value, this.attr.dateFormat)
         } else if (this.attr.format === 'currency') {
@@ -88,12 +92,12 @@ export default {
       let value = null
       let itemIndex = null
       if (this.attr.model) {
-        value = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
+        value = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
       }
       if (this.arraySequence) {
         itemIndex = this.arraySequence[1]
       }
-      this.$util.processAction(this, action, component, value, itemIndex, this.$route.query)
+      this.$util.processAction(this, action, component, value, itemIndex, this.$route.query, this.dataId)
     }
   }
 }

@@ -25,6 +25,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   computed: {
@@ -32,16 +36,16 @@ export default {
       if (this.attr.source) {
         return this.attr.source
       } else {
-        let imgSrc = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8Vw8AAmEBb87E6jIAAAAASUVORK5CYII=')
+        let imgSrc = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8Vw8AAmEBb87E6jIAAAAASUVORK5CYII=')
         return imgSrc
       }
     },
     labelText () {
       let value = ''
       if (this.attr.textLabel && !this.attr.modelLabel) {
-        value = this.$t(this.$util.stringInject(this.attr.textLabel, {data: this.$store.state.generic.data}))
+        value = this.$t(this.$util.stringInject(this.attr.textLabel, {data: this.$store.state.generic.data[this.dataId]}))
       } else if (!this.attr.textLabel && this.attr.modelLabel) {
-        value = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.modelLabel + this.arraySequence + (this.attr.keyLabel ? '.' + this.attr.keyLabel : ''), '')
+        value = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.modelLabel + this.arraySequence + (this.attr.keyLabel ? '.' + this.attr.keyLabel : ''), '')
         if (this.attr.formatLabel === 'date') {
           value = this.$util.datetimeToString(value, this.attr.dateFormat)
         } else if (this.attr.formatLabel === 'currency') {

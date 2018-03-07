@@ -22,8 +22,11 @@ const mutations = {
   [types.UPDATE_OPTION] (state, {key, option}) {
     Vue.set(state.options, key, option)
   },
-  [types.UPDATE_DATA] (state, {key, value}) {
-    Vue.set(state.data, key, value)
+  [types.UPDATE_DATA] (state, {id, key, value}) {
+    if (state.data[id] == null) {
+      Vue.set(state.data, id, {})
+    }
+    Vue.set(state.data[id], key, value)
   },
   [types.UPDATE_COMPONENT] (state, {id, attr, key, value}) {
     if (state.component[id]) {
@@ -59,9 +62,12 @@ const mutations = {
       }
     }
   },
-  [types.UPDATE_DATA_COLLECTION] (state, {collection, prefix}) {
+  [types.UPDATE_DATA_COLLECTION] (state, {id, collection, prefix}) {
+    if (state.data[id] == null) {
+      Vue.set(state.data, id, {})
+    }
     for (let key in collection) {
-      Vue.set(state.data, prefix ? prefix + '_' + key : key, collection[key])
+      Vue.set(state.data[id], prefix ? prefix + '_' + key : key, collection[key])
     }
   },
   [types.REFRESH_COMPONENT] (state, {id}) {
@@ -76,8 +82,8 @@ const mutations = {
   [types.CLEAR_OPTION] (state) {
     state.options = {}
   },
-  [types.CLEAR_DATA] (state) {
-    state.data = {}
+  [types.CLEAR_DATA] (state, {id}) {
+    Vue.set(state.data, id, {})
   },
   [types.CLEAR_COMPONENT] (state, {id, attr}) {
     if (attr) {

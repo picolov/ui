@@ -29,6 +29,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   data () {
@@ -48,10 +52,10 @@ export default {
     },
     data: {
       get () {
-        return this.$store.state.generic.data[this.attr.model + this.arraySequence]
+        return this.$store.state.generic.data[this.dataId][this.attr.model + this.arraySequence]
       },
       set (value) {
-        this.$store.commit(UPDATE_DATA, {key: this.attr.model + this.arraySequence, value: value})
+        this.$store.commit(UPDATE_DATA, {id: this.dataId, key: this.attr.model + this.arraySequence, value: value})
       }
     }
   },
@@ -63,7 +67,7 @@ export default {
       if (this.attr.source) {
         if (this.attr.source.model && !this.attr.source.url) this.attr.source.url = 'generic/class/' + this.attr.source.model
         if (this.attr.source.method && this.attr.source.method === 'post') {
-          api.post(this.$util.stringInject(this.attr.source.url, {data: this.$store.state.generic.data, props: this.$props}), {},
+          api.post(this.$util.stringInject(this.attr.source.url, {data: this.$store.state.generic.data[this.dataId], props: this.$props}), {},
             (response) => {
               this.optionList = response.data
             },
@@ -72,7 +76,7 @@ export default {
             }
           )
         } else {
-          api.get(this.$util.stringInject(this.attr.source.url, {data: this.$store.state.generic.data, props: this.$props}),
+          api.get(this.$util.stringInject(this.attr.source.url, {data: this.$store.state.generic.data[this.dataId], props: this.$props}),
             (response) => {
               this.optionList = response.data
             },

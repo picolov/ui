@@ -20,16 +20,20 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   computed: {
     labelText () {
       let value = ''
       if (this.attr.text && !this.attr.model) {
-        let result = this.$util.stringInject(this.attr.text, {data: this.$store.state.generic.data, props: this.$props})
+        let result = this.$util.stringInject(this.attr.text, {data: this.$store.state.generic.data[this.dataId], props: this.$props})
         value = this.$t(result)
       } else if (!this.attr.text && this.attr.model) {
-        value = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
+        value = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
         if (this.attr.listKey && value.constructor === Array) {
           let result = null
           let separator = ', '

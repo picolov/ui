@@ -47,6 +47,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   mounted () {
@@ -86,7 +90,7 @@ export default {
   },
   computed: {
     count () {
-      return this.$store.state.generic.data[this.attr.modelCount + this.arraySequence]
+      return this.$store.state.generic.data[this.dataId][this.attr.modelCount + this.arraySequence]
     },
     refreshComponentList () {
       return this.$store.state.generic.componentToRefresh
@@ -95,13 +99,13 @@ export default {
   methods: {
     getPolygon (index) {
       if (this.attr.key) {
-        if (this.$store.state.generic.data[this.attr.model + this.arraySequence + '_' + index] != null) {
-          return this.$store.state.generic.data[this.attr.model + this.arraySequence + '_' + index][this.attr.key]
+        if (this.$store.state.generic.data[this.dataId][this.attr.model + this.arraySequence + '_' + index] != null) {
+          return this.$store.state.generic.data[this.dataId][this.attr.model + this.arraySequence + '_' + index][this.attr.key]
         } else {
           return []
         }
       } else {
-        return this.$store.state.generic.data[this.attr.model + this.arraySequence + '_' + index]
+        return this.$store.state.generic.data[this.dataId][this.attr.model + this.arraySequence + '_' + index]
       }
     }
   }

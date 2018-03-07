@@ -26,6 +26,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   computed: {
@@ -34,10 +38,10 @@ export default {
     labelText (pathUnit) {
       let value = ''
       if (pathUnit.text && !pathUnit.model) {
-        let result = this.$util.stringInject(pathUnit.text, {data: this.$store.state.generic.data, props: this.$props})
+        let result = this.$util.stringInject(pathUnit.text, {data: this.$store.state.generic.data[this.dataId], props: this.$props})
         value = this.$t(result)
       } else if (!pathUnit.text && pathUnit.model) {
-        value = this.$util.getObjectOrDefault(this.$store.state.generic.data, pathUnit.model + this.arraySequence + (pathUnit.key ? '.' + pathUnit.key : ''), '')
+        value = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], pathUnit.model + this.arraySequence + (pathUnit.key ? '.' + pathUnit.key : ''), '')
         // console.log(pathUnit.model + this.arraySequence + (pathUnit.key ? '.' + pathUnit.key : ''), value)
         if (pathUnit.format === 'date') {
           value = this.$util.datetimeToString(value, pathUnit.dateFormat)

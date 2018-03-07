@@ -41,8 +41,11 @@ export default {
     rating: {
       type: Number,
       default: 0
+    },
+    dataId: {
+      type: String,
+      required: true
     }
-
   },
   data () {
     return {
@@ -51,10 +54,10 @@ export default {
   computed: {
     data: {
       get () {
-        return this.$store.state.generic.data[this.attr.model + this.arraySequence]
+        return this.$store.state.generic.data[this.dataId][this.attr.model + this.arraySequence]
       },
       set (value) {
-        this.$store.commit(UPDATE_DATA, {key: this.attr.model + this.arraySequence, value: value})
+        this.$store.commit(UPDATE_DATA, {id: this.dataId, key: this.attr.model + this.arraySequence, value: value})
       }
     }
   },

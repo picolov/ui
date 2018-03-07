@@ -23,6 +23,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   data: function data () {
@@ -34,10 +38,10 @@ export default {
   computed: {
     data: {
       get () {
-        return this.$store.state.generic.data[this.attr.model + this.arraySequence]
+        return this.$store.state.generic.data[this.dataId][this.attr.model + this.arraySequence]
       },
       set (value) {
-        this.$store.commit(UPDATE_DATA, {key: this.attr.model + this.arraySequence, value: value})
+        this.$store.commit(UPDATE_DATA, {id: this.dataId, key: this.attr.model + this.arraySequence, value: value})
       }
     },
     wrapperStyles: function wrapperStyles () {

@@ -42,6 +42,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   mounted () {
@@ -76,13 +80,13 @@ export default {
   computed: {
     data () {
       if (this.attr.key) {
-        let value = this.$store.state.generic.data[this.attr.model + this.arraySequence]
+        let value = this.$store.state.generic.data[this.dataId][this.attr.model + this.arraySequence]
         if (value != null) {
           value = value[this.attr.key]
         }
         return value
       } else {
-        return this.$store.state.generic.data[this.attr.model + this.arraySequence]
+        return this.$store.state.generic.data[this.dataId][this.attr.model + this.arraySequence]
       }
     },
     refreshComponentList () {

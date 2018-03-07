@@ -19,7 +19,7 @@
           </b-col>
           <b-col>
             <div class="card-body">
-              <a-container :attr="attr" :array-sequence="arraySequence"/>
+              <a-container :attr="attr" :array-sequence="arraySequence" :data-id="dataId"/>
             </div>
           </b-col>
           <b-col :cols="attr.imageWidth" v-if="attr.imagePosition=='right' && imgSrc" style="padding:0px">
@@ -47,6 +47,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   data () {
@@ -59,7 +63,7 @@ export default {
       if (this.attr.imageSrc) {
         return this.attr.imageSrc
       } else if (this.attr.imageKey) {
-        let imgSrc = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.model + this.arraySequence + '.' + this.attr.imageKey, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8Vw8AAmEBb87E6jIAAAAASUVORK5CYII=')
+        let imgSrc = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.model + this.arraySequence + '.' + this.attr.imageKey, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8Vw8AAmEBb87E6jIAAAAASUVORK5CYII=')
         return imgSrc
       } else {
         return null
@@ -75,12 +79,12 @@ export default {
       let value = null
       let itemIndex = null
       if (this.attr.model) {
-        value = this.$util.getObjectOrDefault(this.$store.state.generic.data, this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
+        value = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
       }
       if (this.arraySequence) {
         itemIndex = this.arraySequence[1]
       }
-      this.$util.processAction(this, action, component, value, itemIndex, this.$route.query)
+      this.$util.processAction(this, action, component, value, itemIndex, this.$route.query, this.dataId)
     }
   }
 }

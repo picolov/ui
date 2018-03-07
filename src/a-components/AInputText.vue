@@ -31,6 +31,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   data () {
@@ -44,7 +48,7 @@ export default {
         if (this.attr.filterKey && this.attr.filterComponentId) {
           return this.filterStr
         } else {
-          return this.$store.state.generic.data[this.attr.model + this.arraySequence]
+          return this.$store.state.generic.data[this.dataId][this.attr.model + this.arraySequence]
         }
       },
       set (value) {
@@ -52,7 +56,7 @@ export default {
           this.$store.commit(UPDATE_COMPONENT, {id: this.attr.filterComponentId, attr: 'filter', key: this.attr.filterKey, value: value})
           this.filterStr = value
         } else {
-          this.$store.commit(UPDATE_DATA, {key: this.attr.model + this.arraySequence, value: value})
+          this.$store.commit(UPDATE_DATA, {id: this.dataId, key: this.attr.model + this.arraySequence, value: value})
         }
       }
     },

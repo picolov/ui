@@ -22,7 +22,7 @@
           :h="component.h"
           :i="component.i">
           <resizeable>
-            <component :is="component.content.type" :attr="component.content" :array-sequence="arraySequence"/>
+            <component :is="component.content.type" :attr="component.content" :array-sequence="arraySequence" :data-id="dataId"/>
           </resizeable>
         </grid-item>
     </grid-layout>
@@ -50,6 +50,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   data () {
@@ -75,7 +79,7 @@ export default {
       // console.log(layout)
     },
     evaluateStatement (statement, component, item, index) {
-      return this.$util.evaluateString.bind(this)(statement, component, item, index)
+      return this.$util.evaluateString.bind(this)(statement, component, item, index, this.dataId)
     }
   }
 }

@@ -15,7 +15,7 @@
             paddingBottom: attr.marginV==null?'5px':attr.marginV + 'px'
             }]">
           <span v-if="editMode" class="col-handle">&nbsp;</span>
-          <component :is="component.type" :attr="component" :array-sequence="arraySequence"/>
+          <component :is="component.type" :attr="component" :array-sequence="arraySequence" :data-id="dataId"/>
         </div>
       </draggable>
     </div>
@@ -41,6 +41,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   data () {
@@ -59,7 +63,7 @@ export default {
   },
   methods: {
     evaluateStatement (statement, component, item, index) {
-      return this.$util.evaluateString.bind(this)(statement, component, item, index)
+      return this.$util.evaluateString.bind(this)(statement, component, item, index, this.dataId)
     }
   }
 }

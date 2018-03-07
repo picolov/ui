@@ -8,7 +8,7 @@
               @on-change="onChange">
     <span slot="title"></span> 
     <tab-content v-for="(component, index) in attr.content" :key="index" :title="component.title?component.title:'tab-' + index" :before-change="beforeTabSwitch.bind(this, component)">
-      <component :is="component.type" :attr="component" :array-sequence="arraySequence"/>
+      <component :is="component.type" :attr="component" :array-sequence="arraySequence" :data-id="dataId"/>
     </tab-content>
   </form-wizard>
 </template>
@@ -32,11 +32,15 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   computed: {
     data () {
-      return this.$store.state.generic.data
+      return this.$store.state.generic.data[this.dataId]
     }
   },
   data () {
@@ -45,7 +49,7 @@ export default {
   },
   methods: {
     onComplete () {
-      this.$util.processAction(this, this.attr.finishAction, this.attr, null, null, this.$route.query)
+      this.$util.processAction(this, this.attr.finishAction, this.attr, null, null, this.$route.query, this.dataId)
     },
     onChange (prevIdx, nextIdx) {
       let component = this.attr.content[nextIdx]
@@ -78,7 +82,7 @@ export default {
       }
     },
     setVar (name, value) {
-      this.$store.commit(UPDATE_DATA, {key: name, value: value})
+      this.$store.commit(UPDATE_DATA, {id: this.dataId, key: name, value: value})
     },
     refreshMap () {
       Vue.$gmapDefaultResizeBus.$emit('resize')

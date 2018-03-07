@@ -18,7 +18,7 @@
         <h6 class="text-center">{{data.label | translate}}</h6>
       </template>
       <template slot="actions" v-if="attr.actions != undefined" slot-scope="row">
-        <template v-for="(action, index) in attr.actions" v-if="action.ifCondition ? $util.evaluateString.bind(this)(action.ifCondition, attr, row.item, row.index) : true">
+        <template v-for="(action, index) in attr.actions" v-if="action.ifCondition ? $util.evaluateString.bind(this)(action.ifCondition, attr, row.item, row.index, dataId) : true">
           <template v-if="action.component && action.component === 'switch'">
             <toggle-button @change="rowActionClick(row.item, row.index, attr, action)" :height="30" :color="{checked: '#ffc928', unchecked: '#ffffff'}" v-model="row.item[action.model]" :style="attr.style" :key="index" style="margin-right: 0.5em"/>
           </template>
@@ -46,6 +46,15 @@ export default {
       type: Object,
       required: true,
       default: () => {}
+    },
+    arraySequence: {
+      type: String,
+      required: false,
+      default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   data () {
@@ -60,10 +69,10 @@ export default {
   computed: {
     data: {
       get () {
-        return this.$store.state.generic.data[this.attr.model]
+        return this.$store.state.generic.data[this.dataId][this.attr.model + this.arraySequence]
       },
       set (value) {
-        this.$store.commit(UPDATE_DATA, {key: this.attr.model, value: value})
+        this.$store.commit(UPDATE_DATA, {id: this.dataId, key: this.attr.model + this.arraySequence, value: value})
       }
     },
     refreshComponentList () {
@@ -90,7 +99,7 @@ export default {
         let filterCrit = ''
         this.filter = this.$store.state.generic.component[this.attr.id]['filter']
         if (this.attr.criteria) {
-          let processedCrit = this.$util.stringInject(this.attr.criteria, this.$store.state.generic.data)
+          let processedCrit = this.$util.stringInject(this.attr.criteria, this.$store.state.generic.data[this.dataId])
           if (processedCrit) {
             let tokenListCrit = processedCrit.split(',')
             for (let i = 0; i < tokenListCrit.length; i++) {
@@ -162,10 +171,11 @@ export default {
     },
     rowActionClick (item, index, component, action) {
       if (action === undefined) return
-      this.$util.processAction(this, action, component, item, index, this.$route.query)
+      this.$util.processAction(this, action, component, item, index, this.$route.query, this.dataId)
     },
     filterValue (key) {
-      return this.$store.state.generic.data[this.attr.id]['filter'][key]
+      // TODO: need to change this to use new filter mechanism, this is the old one
+      return this.$store.state.generic.data[this.dataId][this.attr.id]['filter'][key]
     },
     filterInput (key, value) {
       this.$store.commit(UPDATE_COMPONENT, {id: this.attr.id, attr: 'filter', key: key, value: value})

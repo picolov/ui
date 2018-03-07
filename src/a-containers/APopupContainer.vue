@@ -28,8 +28,8 @@
       <div v-if="!layoutLoaded">
         // Todo Loader
       </div>
-      <a-container v-if="!isExternalLayout" :attr="attr" :array-sequence="arraySequence"/>
-      <a-container v-if="isExternalLayout && layoutLoaded && popUpLayoutAttr != null" :attr="popUpLayoutAttr" :array-sequence="arraySequence" />
+      <a-container v-if="!isExternalLayout" :attr="attr" :array-sequence="arraySequence" :data-id="dataId"/>
+      <a-container v-if="isExternalLayout && layoutLoaded && popUpLayoutAttr != null" :attr="popUpLayoutAttr" :array-sequence="arraySequence" :data-id="dataId"/>
       <template slot="modal-footer" v-if="attr.footerButtons != undefined && Array.isArray(attr.footerButtons)">
         <template v-for="(button, index) in attr.footerButtons">
           <b-button 
@@ -63,6 +63,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   data () {
@@ -89,7 +93,7 @@ export default {
       // return setTimeout((resolve) => { this.layoutLoaded = true }, 3000)
       // this is set to be null so that the generic-container will got re-mounted, if not then if will not see that it need to be re-mounted, because changing props doesn't count
       this.popUpLayoutAttr = null // this.attr = null
-      this.$store.commit(UPDATE_DATA, {key: this.attr.model + this.arraySequence, value: {}}) // this.$store.commit(CLEAR_DATA)
+      this.$store.commit(UPDATE_DATA, {id: this.dataId, key: this.attr.model + this.arraySequence, value: {}}) // this.$store.commit(CLEAR_DATA)
       this.$bus.$emit('show-full-loading', { key: 'fetchPopUpLayout' })
       // load layout
       new Promise((resolve, reject) => {
@@ -116,7 +120,7 @@ export default {
                       let getDataPromise = new Promise((resolve, reject) => {
                         api.post(url, {},
                           (response) => {
-                            this.$store.commit(UPDATE_DATA_COLLECTION, {collection: response.data, prefix: action.prefix})
+                            this.$store.commit(UPDATE_DATA_COLLECTION, {id: this.dataId, collection: response.data, prefix: action.prefix})
                             if (action.refreshId) {
                               this.$store.commit(REFRESH_COMPONENT, {id: action.refreshId})
                             }
@@ -132,7 +136,7 @@ export default {
                       let getDataPromise = new Promise((resolve, reject) => {
                         api.get(url,
                           (response) => {
-                            this.$store.commit(UPDATE_DATA_COLLECTION, {collection: response.data, prefix: action.prefix})
+                            this.$store.commit(UPDATE_DATA_COLLECTION, {id: this.dataId, collection: response.data, prefix: action.prefix})
                             if (action.refreshId) {
                               this.$store.commit(REFRESH_COMPONENT, {id: action.refreshId})
                             }
@@ -147,7 +151,7 @@ export default {
                     }
                     break
                   case 'initData':
-                    this.$store.commit(UPDATE_DATA_COLLECTION, {collection: action.keyVal})
+                    this.$store.commit(UPDATE_DATA_COLLECTION, {id: this.dataId, collection: action.keyVal})
                     break
                 }
               }
@@ -184,7 +188,7 @@ export default {
         if (this.attr.filterKey && this.attr.filterComponentId) {
           return this.filterStr
         } else {
-          return this.$store.state.generic.data[this.attr.model + this.arraySequence]
+          return this.$store.state.generic.data[this.dataId][this.attr.model + this.arraySequence]
         }
       },
       set (value) {
@@ -192,7 +196,7 @@ export default {
           this.$store.commit(UPDATE_COMPONENT, {id: this.attr.filterComponentId, attr: 'filter', key: this.attr.filterKey, value: value})
           this.filterStr = value
         } else {
-          this.$store.commit(UPDATE_DATA, {key: this.attr.model + this.arraySequence, value: value})
+          this.$store.commit(UPDATE_DATA, {id: this.dataId, key: this.attr.model + this.arraySequence, value: value})
         }
       }
     },
@@ -201,7 +205,7 @@ export default {
         this.handleCancel()
       } else {
         if (action === undefined) return
-        this.$util.processAction(this, action, component, null, null, this.urlParam)
+        this.$util.processAction(this, action, component, null, null, this.urlParam, this.dataId)
       }
     },
     onClose () {

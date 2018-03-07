@@ -1,7 +1,7 @@
 <template>
   <b-card style="display: inline-block; margin-right: 1em;" :style="attr.style" align="center">
-    <a-image class="d-block mx-auto" :attr="{source: attr.imageSrc==null ? 'http://via.placeholder.com/100x100' : attr.imageSrc, imgWidth: attr.imgWidth | 100, imgHeight: attr.imgHeight | 100, shape: 'circle'}"/>
-    <a-label :attr="{text: attr.text}"/>
+    <a-image class="d-block mx-auto" :attr="{source: attr.imageSrc==null ? 'http://via.placeholder.com/100x100' : attr.imageSrc, imgWidth: attr.imgWidth | 100, imgHeight: attr.imgHeight | 100, shape: 'circle'}" :data-id="dataId"/>
+    <a-label :attr="{text: attr.text}" :data-id="dataId"/>
   </b-card>
 </template>
 
@@ -18,6 +18,10 @@ export default {
       type: String,
       required: false,
       default: () => ''
+    },
+    dataId: {
+      type: String,
+      required: true
     }
   },
   computed: {
