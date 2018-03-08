@@ -1,6 +1,6 @@
 <template>
   <div :style="attr.style">
-    <b-btn v-if="this.attr.hidePopUpButton" @click="showPopUp()" variant="primary">Show Modal</b-btn>
+    <b-btn v-if="this.attr.hidePopUpButton == undefined ? true : this.attr.hidePopUpButton" @click="showPopUp()" variant="primary">Show Modal</b-btn>
     <b-modal :ref="popUpRef" lazy
       :id="attr.id + arraySequence"
       :style="attr.style"

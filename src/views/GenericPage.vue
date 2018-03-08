@@ -2,10 +2,10 @@
   <div class="animated fadeIn">
     <component v-if="attr !== null" :is="attr.type" :attr="attr" :data-id="dataId"/>
     <!-- Modal Component -->
-    <b-modal id="info-alert" v-model="infoAlertShow" @ok="okAlertClick" centered :title="alertTitle" :hide-header-close="true" :ok-only="true" :no-close-on-backdrop="true">
+    <b-modal id="info-alert" v-model="infoAlertShow" @ok="okAlertClick" @cancel="cancelAlertClick" centered :title="alertTitle" :hide-header-close="true" :ok-only="true" :no-close-on-backdrop="true">
       <h3>{{alertMessage}}</h3>
     </b-modal>
-    <b-modal id="yesNo-alert" v-model="yesNoAlertShow" @ok="okAlertClick" centered :title="alertTitle" :hide-header-close="true" :no-close-on-backdrop="true">
+    <b-modal id="yesNo-alert" v-model="yesNoAlertShow" @ok="okAlertClick" @cancel="cancelAlertClick" centered :title="alertTitle" :hide-header-close="true" :no-close-on-backdrop="true">
       <h3>{{alertMessage}}</h3>
     </b-modal>
     <b-modal id="mapPicker-alert" ref="mapPickerModal" v-model="mapPickerAlertShow" @show="mapPickerShow" @shown="mapPickerShown" centered :hide-header="true" :hide-footer="true">
@@ -111,6 +111,7 @@ export default {
     ...mapState({ alertTitle: state => state.app.alertTitle }),
     ...mapState({ alertMessage: state => state.app.alertMessage }),
     ...mapState({ okCallback: state => state.app.okCallback }),
+    ...mapState({ cancelCallback: state => state.app.cancelCallback }),
     ...mapState({ selectLocationCallback: state => state.app.selectLocationCallback })
   },
   created () {
@@ -187,6 +188,9 @@ export default {
     },
     okAlertClick () {
       this.okCallback()
+    },
+    cancelAlertClick () {
+      this.cancelCallback()
     },
     selectLocationClick () {
       this.selectLocationCallback(this.path)

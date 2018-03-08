@@ -10,18 +10,86 @@ export default {
 }
 
 function processAction (instance, action, component, item, index, urlParam, dataId) {
-  if (action.showLoading) { instance.$bus.$emit('show-full-loading', { key: 'fetchLayout' }) }
   let data = instance.$store.state.generic.data[dataId]
-  let mapInject = {data: data, item: item, urlParam: urlParam, index: index, component: component, action: action}
-  let url = stringInject(action.url, mapInject)
+  let actionOption = {data: data, item: item, urlParam: urlParam, index: index, component: component}
+
+  if (!action.hasOwnProperty('functions')) {
+    // backward compatible
+    processFunction(instance, data, action, actionOption, dataId)
+    return
+  }
+  let functionSequences = generateFunctionSequences(action)
+  if (functionSequences.length === 0) return
+
+  if (action.showLoading) { instance.$bus.$emit('show-full-loading', { key: 'processAction' }) }
+
+  var functionCount = Object.keys(functionSequences).length
+  var sequenceCount = 0
+
+  _.reduce(functionSequences, (previousAgenda, actionAgenda) => {
+    return previousAgenda.then((previousResult) => {
+      let agendaPromise = []
+      sequenceCount++
+
+      _.reduce(actionAgenda, (result, action) => {
+        let actionPromise = processFunction(instance, data, action, actionOption, dataId)
+          .then((actionResult) => {
+            return actionResult
+          })
+        agendaPromise.push(actionPromise)
+        // return untuk memberikan param ke action selanjutnya
+      }, [])
+
+      let chainPromise = Promise.all(agendaPromise)
+
+      // sequenceCount === functionCount, is last executed function, it will out of loop and promise will needed to run last action
+      if (sequenceCount === functionCount) {
+        chainPromise.then((result) => {
+          // To do: Action Callback after all process running
+          instance.$bus.$emit('hide-full-loading', { key: 'processAction' })
+          console.log('all function done', result)
+          Promise.resolve(result)
+        }).catch((error) => {
+          instance.$bus.$emit('hide-full-loading', { key: 'processAction' })
+          Promise.reject(error)
+        })
+      }
+
+      return chainPromise
+    }).catch((error) => {
+      instance.$bus.$emit('hide-full-loading', { key: 'processAction' })
+      console.log('error when executing action:', error)
+    })
+  }, Promise.resolve())
+
+  return true
+}
+
+/*
+function simulateASync (e) {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => resolve(e), 2000)
+  })
+}
+*/
+
+function processFunction (instance, data, action, actionOption, dataId) {
+  let url = stringInject(action.url, {actionOption, ...{action: action}})
+  var deferred = new Deferred()
   switch (action.type) {
     case 'refreshTable':
       instance.$store.commit(REFRESH_COMPONENT, {id: action.componentId})
       if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+      deferred.resolve()
       break
     case 'copyModel':
-      instance.$store.commit(UPDATE_DATA, {id: dataId, key: action.target, value: item})
+      let sourceData = actionOption.item
+      if (action.source) {
+        sourceData = getObjectOrDefault(data, action.source, null)
+      }
+      instance.$store.commit(UPDATE_DATA, {id: dataId, key: action.target, value: sourceData})
       if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+      deferred.resolve()
       break
     case 'getData':
       if (action.method && action.method === 'post') {
@@ -35,8 +103,12 @@ function processAction (instance, action, component, item, index, urlParam, data
               }
             }
             if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+            deferred.resolve(response)
           },
-          () => { if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) } }
+          (error) => {
+            if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+            deferred.reject(error)
+          }
         )
       } else {
         api.get(url,
@@ -49,18 +121,24 @@ function processAction (instance, action, component, item, index, urlParam, data
               }
             }
             if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+            deferred.resolve(response)
           },
-          () => { if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) } }
+          (error) => {
+            if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+            deferred.reject(error)
+          }
         )
       }
       break
     case 'goto':
       instance.$router.push({ path: url })
       if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+      deferred.resolve()
       break
     case 'goback':
       instance.$router.go(-1)
       if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+      deferred.resolve()
       break
     case 'addRow':
       if (data[action.model]) {
@@ -70,10 +148,15 @@ function processAction (instance, action, component, item, index, urlParam, data
         instance.$store.commit(UPDATE_DATA, {id: dataId, key: action.model, value: 1})
       }
       if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+      deferred.resolve()
       break
     case 'exec':
       if (!action.use_validate) {
-        execForm(instance, action, component, item, index, urlParam, dataId)
+        execForm(instance, data, action, actionOption, dataId).then((result) => {
+          deferred.resolve(result)
+        }).catch((error) => {
+          deferred.reject(error)
+        })
       } else {
         instance.$validator.validateAll().then((isValid) => {
           if (!isValid) {
@@ -81,17 +164,42 @@ function processAction (instance, action, component, item, index, urlParam, data
             console.log('Correct them errors!')
             return
           }
-          execForm(instance, action, component, item, index, urlParam, dataId)
+          execForm(instance, data, action, actionOption, dataId).then((result) => {
+            deferred.resolve(result)
+          }).catch((error) => {
+            deferred.reject(error)
+          })
         })
       }
       break
+    default:
+      deferred.resolve()
+      break
   }
+  return deferred.promise
 }
 
-function execForm (instance, action, component, item, index, urlParam, dataId) {
-  let data = instance.$store.state.generic.data[dataId]
-  let mapInject = {data: data, item: item, urlParam: urlParam, index: index, component: component, action: action}
-  let url = stringInject(action.url, mapInject)
+function generateFunctionSequences (action) {
+  let functionSequences = {}
+  if (!Array.isArray(action.functions)) return functionSequences
+
+  _.forEach(action.functions, function (fn) {
+    let indexSequence = 'default'
+    if (fn.sequence) {
+      indexSequence = fn.sequence
+    }
+    if (!functionSequences.hasOwnProperty(indexSequence)) {
+      functionSequences[indexSequence] = []
+    }
+    functionSequences[indexSequence].push(fn)
+  })
+
+  return functionSequences
+}
+
+function execForm (instance, data, action, actionOption, dataId) {
+  let url = stringInject(action.url, actionOption)
+  var deferredRequest = new Deferred()
   let payload = {}
   if (action.data) {
     for (let i = 0; i < action.data.length; i++) {
@@ -128,8 +236,8 @@ function execForm (instance, action, component, item, index, urlParam, dataId) {
             } else if (action.goback) {
               instance.$router.go(-1)
             }
-            if (component.type === 'a-table') {
-              instance.$store.commit(REFRESH_COMPONENT, {id: component.id})
+            if (actionOption.component.type === 'a-table') {
+              instance.$store.commit(REFRESH_COMPONENT, {id: actionOption.component.id})
             }
             if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
           } else {
@@ -144,8 +252,8 @@ function execForm (instance, action, component, item, index, urlParam, dataId) {
                 } else if (action.goback) {
                   instance.$router.go(-1)
                 }
-                if (component.type === 'a-table') {
-                  instance.$store.commit(REFRESH_COMPONENT, {id: component.id})
+                if (actionOption.component.type === 'a-table') {
+                  instance.$store.commit(REFRESH_COMPONENT, {id: actionOption.component.id})
                 }
               }
             })
@@ -153,10 +261,12 @@ function execForm (instance, action, component, item, index, urlParam, dataId) {
           if (action.refreshId) {
             instance.$store.commit(REFRESH_COMPONENT, {id: action.refreshId})
           }
+          deferredRequest.resolve(response)
         },
-        () => {
-          console.log('ERROR button click' + component.type + '-' + component.text)
+        (error) => {
+          console.log('ERROR button click' + actionOption.component.type + '-' + actionOption.component.text)
           if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+          deferredRequest.reject(error)
         }
       )
       break
@@ -170,8 +280,8 @@ function execForm (instance, action, component, item, index, urlParam, dataId) {
             } else if (action.goback) {
               instance.$router.go(-1)
             }
-            if (component.type === 'a-table') {
-              instance.$store.commit(REFRESH_COMPONENT, {id: component.id})
+            if (actionOption.component.type === 'a-table') {
+              instance.$store.commit(REFRESH_COMPONENT, {id: actionOption.component.id})
             }
             if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
           } else {
@@ -186,16 +296,18 @@ function execForm (instance, action, component, item, index, urlParam, dataId) {
                 } else if (action.goback) {
                   instance.$router.go(-1)
                 }
-                if (component.type === 'a-table') {
-                  instance.$store.commit(REFRESH_COMPONENT, {id: component.id})
+                if (actionOption.component.type === 'a-table') {
+                  instance.$store.commit(REFRESH_COMPONENT, {id: actionOption.component.id})
                 }
               }
             })
           }
+          deferredRequest.resolve(response)
         },
-        () => {
-          console.log('ERROR button click' + component.type + '-' + component.text)
+        (error) => {
+          console.log('ERROR button click' + actionOption.component.type + '-' + actionOption.component.text)
           if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+          deferredRequest.reject(error)
         }
       )
       break
@@ -203,25 +315,33 @@ function execForm (instance, action, component, item, index, urlParam, dataId) {
       api.get(
         url,
         (response) => {
-          if (component.type === 'a-table') {
-            instance.$store.commit(REFRESH_COMPONENT, {id: component.id})
+          if (actionOption.component.type === 'a-table') {
+            instance.$store.commit(REFRESH_COMPONENT, {id: actionOption.component.id})
           }
           if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+          deferredRequest.resolve(response)
         },
-        () => { if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) } }
+        (error) => {
+          if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+          deferredRequest.reject(error)
+        }
       )
       break
     case 'delete':
       if (action.noAlert) {
-        api.delete(
+        return api.delete(
           url,
           (response) => {
-            if (component.type === 'a-table') {
-              instance.$store.commit(REFRESH_COMPONENT, {id: component.id})
+            if (actionOption.component.type === 'a-table') {
+              instance.$store.commit(REFRESH_COMPONENT, {id: actionOption.component.id})
             }
             if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+            deferredRequest.resolve(response)
           },
-          () => { if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) } }
+          (error) => {
+            if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+            deferredRequest.reject(error)
+          }
         )
       } else {
         if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
@@ -233,18 +353,28 @@ function execForm (instance, action, component, item, index, urlParam, dataId) {
             api.delete(
               url,
               (response) => {
-                if (component.type === 'a-table') {
-                  instance.$store.commit(REFRESH_COMPONENT, {id: component.id})
+                if (actionOption.component.type === 'a-table') {
+                  instance.$store.commit(REFRESH_COMPONENT, {id: actionOption.component.id})
                 }
+                deferredRequest.resolve(response)
               },
-              () => {
+              (error) => {
+                if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+                deferredRequest.reject(error)
               }
             )
+          },
+          cancelCallback: () => {
+            deferredRequest.reject('prompt canceled')
           }
         })
       }
       break
+    default:
+      deferredRequest.resolve()
+      break
   }
+  return deferredRequest.promise
 }
 
 function datetimeToString (datetime, formatParam) {
@@ -495,6 +625,47 @@ function getComponents (items, applyFunction = undefined, findFirst = false) {
     }
     return true
   })
+}
+
+// Backwards and forwards compatible helper for obsolete Promise.defer()
+function Deferred () {
+  // update 062115 for typeof
+  if (typeof (Promise) !== 'undefined' && Promise.defer) {
+    // need import of Promise.jsm for example: Cu.import('resource:/gree/modules/Promise.jsm');
+    return Promise.defer()
+    /* eslint-disable no-undef */
+  } else if (typeof (PromiseUtils) !== 'undefined' && PromiseUtils.defer) {
+    // need import of PromiseUtils.jsm for example: Cu.import('resource:/gree/modules/PromiseUtils.jsm');
+    /* eslint-disable no-undef */
+    return PromiseUtils.defer()
+  } else {
+    /* A method to resolve the associated Promise with the value passed.
+    * If the promise is already settled it does nothing.
+    *
+    * @param {anything} value : This value is used to resolve the promise
+    * If the value is a Promise then the associated promise assumes the state
+    * of Promise passed as value.
+    */
+    this.resolve = null
+
+    /* A method to reject the assocaited Promise with the value passed.
+    * If the promise is already settled it does nothing.
+    *
+    * @param {anything} reason: The reason for the rejection of the Promise.
+    * Generally its an Error object. If however a Promise is passed, then the Promise
+    * itself will be the reason for rejection no matter the state of the Promise.
+    */
+    this.reject = null
+
+    /* A newly created Promise object.
+    * Initially in pending state.
+    */
+    this.promise = new Promise(function (resolve, reject) {
+      this.resolve = resolve
+      this.reject = reject
+    }.bind(this))
+    Object.freeze(this)
+  }
 }
 
 function traverse (value, findFirst, matchFunction) {

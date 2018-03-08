@@ -55,7 +55,7 @@ export default {
   },
   data () {
     return {
-      imageClassPosition: this.imgSrc === undefined ? '' : 'image-' + (this.attr.imagePosition === undefined ? 'left' : this.attr.imagePosition)
+      imageClassPosition: this.imgSrc === undefined ? 'image-left' : 'image-' + (this.attr.imagePosition === undefined ? 'left' : this.attr.imagePosition)
     }
   },
   computed: {

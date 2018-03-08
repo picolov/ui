@@ -12,6 +12,7 @@ const state = {
   yesNoAlertShow: false,
   mapPickerAlertShow: false,
   okCallback: () => {},
+  cancelCallback: () => {},
   selectLocationCallback: () => {}
 }
 
@@ -35,10 +36,11 @@ const mutations = {
     state.title = title
     state.pageLang = lang
   },
-  [types.SHOW_ALERT] (state, {alertType, alertTitle, alertMessage, okCallback}) {
+  [types.SHOW_ALERT] (state, {alertType, alertTitle, alertMessage, okCallback, cancelCallback}) {
     state.alertTitle = alertTitle
     state.alertMessage = alertMessage
     state.okCallback = okCallback
+    state.cancelCallback = cancelCallback
     switch (alertType) {
       case 'info':
         state.infoAlertShow = true
