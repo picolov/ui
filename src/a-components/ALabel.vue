@@ -26,7 +26,19 @@ export default {
       required: true
     }
   },
+  data () {
+    return {
+      textChanged: true
+    }
+  },
   computed: {
+    refreshOn () {
+      if (this.attr.refreshOn) {
+        return this.$store.state.generic.data[this.dataId][this.attr.refreshOn]
+      } else {
+        return false
+      }
+    },
     labelText () {
       let value = ''
       if (this.attr.text && !this.attr.model) {
@@ -52,6 +64,15 @@ export default {
         }
       }
       return value
+    }
+  },
+  watch: {
+    refreshOn: {
+      handler: function (newVal, oldVal) {
+        if (oldVal !== newVal) {
+          this.textChanged = true
+        }
+      }
     }
   },
   methods: {

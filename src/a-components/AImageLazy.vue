@@ -13,6 +13,8 @@
 </template>
 
 <script>
+import * as config from '../config'
+
 export default {
   name: 'a-imageLazy',
   props: {
@@ -37,6 +39,9 @@ export default {
         return this.attr.source
       } else {
         let imgSrc = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8Vw8AAmEBb87E6jIAAAAASUVORK5CYII=')
+        if (!imgSrc.startsWith('data:') && !imgSrc.startsWith('http')) {
+          imgSrc = config.BASE_URL + imgSrc
+        }
         return imgSrc
       }
     },

@@ -1,7 +1,8 @@
+import * as config from '../config'
 import axios from 'axios'
 // import router from '../router'
 export const HTTP = axios.create({
-  baseURL: 'http://45.76.192.53:8090/',
+  baseURL: config.BASE_URL,
   headers: {
     Authorization: localStorage.getItem('access_token')
   }
@@ -14,7 +15,7 @@ HTTP.interceptors.response.use(response => {
     if (error.response.status === 401) {
       console.log('error 401')
       // router.push('project')
-      window.location = '/sign-in.html'
+      window.location = config.SIGNIN_PATH
     }
   }
   throw error
