@@ -32,6 +32,7 @@
 </template>
 
 <script>
+import * as config from '../config'
 
 export default {
   name: 'a-thumbnailCardContainer',
@@ -64,6 +65,9 @@ export default {
         return this.attr.imageSrc
       } else if (this.attr.imageKey) {
         let imgSrc = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.model + this.arraySequence + '.' + this.attr.imageKey, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8Vw8AAmEBb87E6jIAAAAASUVORK5CYII=')
+        if (!imgSrc.startsWith('data:') && !imgSrc.startsWith('http')) {
+          imgSrc = config.BASE_URL + imgSrc
+        }
         return imgSrc
       } else {
         return null

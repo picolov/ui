@@ -132,6 +132,10 @@ export default {
         if (hasFilter) {
           params = params + '&criteria=' + filterCrit
         }
+        let urlToken = this.attr.url.split('?')
+        if (urlToken.length === 2) {
+          params = params + '&' + urlToken[1]
+        }
         if (this.attr.model) {
           this.totalRows = 0
           if (this.data) this.totalRows = this.data.length
@@ -139,7 +143,7 @@ export default {
         } else {
           if (this.attr.method === 'get') {
             api.get(
-              this.attr.url + params,
+              urlToken[0] + params,
               (response) => {
                 let dataMap = response.data
                 this.totalRows = dataMap.totalRows
