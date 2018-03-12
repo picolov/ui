@@ -91,6 +91,32 @@ const mutations = {
     } else {
       state.component[id] = {}
     }
+  },
+  [types.REMOVE_ROW] (state, {id, arraySequence, arrayCount}) {
+    const containerData = state.data[id]
+    const sequenceNotation = arraySequence[0]
+
+    let currentIndex = parseInt(arraySequence.substring(1))
+    if (sequenceNotation === '.') { currentIndex++ }
+    let currentSequence = arraySequence
+
+    // if i == count then no need to copy
+    if (currentIndex < containerData[arrayCount]) {
+      let nextIndex = currentIndex + 1
+      let nextSequence = null
+      // recursively copy data
+      for (let i = currentIndex; i <= containerData[arrayCount]; i++, nextIndex++) {
+        nextSequence = sequenceNotation + nextIndex
+        for (var key in containerData.componentModelName) {
+          Vue.set(state.data[id], containerData.componentModelName[key] + currentSequence, containerData[containerData.componentModelName[key] + nextSequence])
+        }
+        currentSequence = nextSequence
+      }
+    }
+    // remove last row
+    if (state.data[id][arrayCount] && state.data[id][arrayCount] > 0) {
+      Vue.set(state.data[id], arrayCount, state.data[id][arrayCount] - 1)
+    }
   }
 }
 

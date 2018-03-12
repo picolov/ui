@@ -1,11 +1,11 @@
-import { UPDATE_DATA, SHOW_ALERT, REFRESH_COMPONENT } from './store/mutation-types'
+import { UPDATE_DATA, REMOVE_ROW, SHOW_ALERT, REFRESH_COMPONENT } from './store/mutation-types'
 import moment from 'moment'
 import api from './api/common'
 import {_} from 'vue-underscore'
 
 export default {
   install: function (Vue) {
-    Object.defineProperty(Vue.prototype, '$util', { value: {stringInject, getObjectOrDefault, getObjectFromString, orderComponentList, uuid, evaluateString, processAction, datetimeToString, moneyFormat, getQueryStringObject, deepSearch, getComponents} })
+    Object.defineProperty(Vue.prototype, '$util', { value: {stringInject, getObjectOrDefault, getObjectFromString, orderComponentList, uuid, evaluateString, processAction, datetimeToString, moneyFormat, getQueryStringObject, deepSearch, getComponents, getComponentsWithModel} })
   }
 }
 
@@ -147,6 +147,11 @@ function processFunction (instance, data, action, actionOption, dataId) {
       } else {
         instance.$store.commit(UPDATE_DATA, {id: dataId, key: action.model, value: 1})
       }
+      if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
+      deferred.resolve()
+      break
+    case 'removeRow':
+      instance.$store.commit(REMOVE_ROW, {id: dataId, arraySequence: actionOption.index, arrayCount: action.model})
       if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
       deferred.resolve()
       break
@@ -587,13 +592,41 @@ function getQueryStringObject (url) {
  * @param  {String} findFirst      flag to stop on first match
  * @return {Object}                The object of query value
  */
-function deepSearch (items, attrs, applyFunction = undefined, findFirst = false) {
-  return traverse(items, findFirst, (value) => {
-    for (var key in attrs) {
-      if (!_.isUndefined(value)) {
-        if (attrs[key] !== value[key]) {
-          return false
+function deepSearch (items, attrs, applyFunction = undefined, findFirst = false, matchCallback = undefined) {
+  var matchFunction = matchCallback
+  if (!matchFunction || typeof matchFunction !== 'function') {
+    matchFunction = (value) => {
+      for (var key in attrs) {
+        if (!_.isUndefined(value)) {
+          if (attrs[key] !== value[key]) {
+            return false
+          }
         }
+      }
+
+      if (typeof applyFunction === 'function') {
+        applyFunction(value)
+      }
+      return true
+    }
+  }
+
+  return traverse(items, findFirst, matchFunction)
+}
+
+/**
+ * Get the list of a-component from layout
+ * @param  {String} items          layout of page
+ * @param  {String} applyFunction  the function callback that want to applied to object
+ * @param  {String} findFirst      flag to stop on first match
+ * @return {Object}                The object of query value
+ */
+
+function getComponents (items, applyFunction = undefined, findFirst = false) {
+  return traverse(items, findFirst, (value) => {
+    if (!_.isUndefined(value)) {
+      if (!value.hasOwnProperty('type') || value['type'].substring(0, 2) !== 'a-') {
+        return false
       }
     }
 
@@ -612,10 +645,10 @@ function deepSearch (items, attrs, applyFunction = undefined, findFirst = false)
  * @return {Object}                The object of query value
  */
 
-function getComponents (items, applyFunction = undefined, findFirst = false) {
+function getComponentsWithModel (items, applyFunction = undefined, findFirst = false) {
   return traverse(items, findFirst, (value) => {
     if (!_.isUndefined(value)) {
-      if (!value.hasOwnProperty('type') || value['type'].substring(0, 2) !== 'a-') {
+      if (!value.hasOwnProperty('model') && !value.hasOwnProperty('modelLabel') && !value.hasOwnProperty('modelFrom') && !value.hasOwnProperty('modelTo') && !value.hasOwnProperty('modelCount')) {
         return false
       }
     }
