@@ -90,14 +90,10 @@ export default {
       if (action === undefined) return
 
       let value = null
-      let itemIndex = null
       if (this.attr.model) {
         value = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.model + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')
       }
-      if (this.arraySequence) {
-        itemIndex = this.arraySequence[1]
-      }
-      this.$util.processAction(this, action, component, value, itemIndex, this.$route.query, this.dataId)
+      this.$util.processAction(this, action, component, value, this.arraySequence, this.$route.query, this.dataId)
     }
   }
 }

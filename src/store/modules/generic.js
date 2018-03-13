@@ -93,19 +93,24 @@ const mutations = {
     }
   },
   [types.REMOVE_ROW] (state, {id, arraySequence, arrayCount}) {
+    // still only support for '_' sequenceNotation
     const containerData = state.data[id]
-    const sequenceNotation = arraySequence[0]
-
-    let currentIndex = parseInt(arraySequence.substring(1))
-    if (sequenceNotation === '.') { currentIndex++ }
+    let sequenceNotation = ''
+    let currentIndex = parseInt(arraySequence)
+    let lastIndex = containerData[arrayCount]
+    if (isNaN(currentIndex)) {
+      sequenceNotation = arraySequence[0]
+      currentIndex = parseInt(arraySequence.substring(1))
+      if (sequenceNotation === '.') { lastIndex-- }
+    }
     let currentSequence = arraySequence
 
-    // if i == count then no need to copy
-    if (currentIndex < containerData[arrayCount]) {
+    // only when currentIndex is in the array
+    if (currentIndex <= lastIndex) {
       let nextIndex = currentIndex + 1
       let nextSequence = null
       // recursively copy data
-      for (let i = currentIndex; i <= containerData[arrayCount]; i++, nextIndex++) {
+      for (let i = currentIndex; i <= lastIndex; i++, nextIndex++) {
         nextSequence = sequenceNotation + nextIndex
         for (var key in containerData.componentModelName) {
           Vue.set(state.data[id], containerData.componentModelName[key] + currentSequence, containerData[containerData.componentModelName[key] + nextSequence])
