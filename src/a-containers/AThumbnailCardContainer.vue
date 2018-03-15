@@ -102,9 +102,9 @@ export default {
     z-index: 1;
   }
   .profile-thumbnail .card-action.image-left{
-    right: 3%;
+    right: 2%;
   }
   .profile-thumbnail .card-action.image-right{
-    right: 47%;
+    right: 48%;
   }
 </style>

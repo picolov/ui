@@ -73,8 +73,23 @@ function simulateASync (e) {
 }
 */
 
+function changeRoute (instance, route, routeOption) {
+  let pageRoutes = instance.$store.state.app.pageRoutes
+  let nextRoute = null
+  if (pageRoutes && pageRoutes.length > 0) {
+    nextRoute = pageRoutes.find(function (itemRoute) {
+      return itemRoute.id === route
+    })
+  }
+  if (nextRoute) {
+    instance.$router.push({ path: instance.$util.stringInject(nextRoute.url, {...routeOption}) })
+  } else {
+    console.log('route not found')
+  }
+}
+
 function processFunction (instance, data, action, actionOption, dataId) {
-  let url = stringInject(action.url, {actionOption, ...{action: action}})
+  let url = stringInject(action.url, {...actionOption, action: action})
   var deferred = new Deferred()
   switch (action.type) {
     case 'refreshTable':
@@ -131,7 +146,7 @@ function processFunction (instance, data, action, actionOption, dataId) {
       }
       break
     case 'goto':
-      instance.$router.push({ path: url })
+      changeRoute(instance, action.route, actionOption)
       if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
       deferred.resolve()
       break
@@ -221,23 +236,23 @@ function execForm (instance, data, action, actionOption, dataId) {
     case 'post':
       api.post(url, payload,
         (response) => {
-          if (action.redirect) action.redirect = instance.$util.stringInject(action.redirect, response)
+          let data = response.data
           if (action.model) {
             if (action.model === 'root' || action.model === '') {
-              for (let key in response.data) {
+              for (let key in data) {
                 if (action.prefix) {
-                  instance.$store.commit(UPDATE_DATA, {id: dataId, key: action.prefix + '_' + key, value: response.data[key]})
+                  instance.$store.commit(UPDATE_DATA, {id: dataId, key: action.prefix + '_' + key, value: data[key]})
                 } else {
-                  instance.$store.commit(UPDATE_DATA, {id: dataId, key: key, value: response.data[key]})
+                  instance.$store.commit(UPDATE_DATA, {id: dataId, key: key, value: data[key]})
                 }
               }
             } else {
-              instance.$store.commit(UPDATE_DATA, {id: dataId, key: action.model, value: response.data})
+              instance.$store.commit(UPDATE_DATA, {id: dataId, key: action.model, value: data})
             }
           }
           if (action.noAlert) {
             if (action.redirect) {
-              instance.$router.push({ path: action.redirect })
+              changeRoute(instance, action.redirect, {item: data})
             } else if (action.goback) {
               instance.$router.go(-1)
             }
@@ -253,7 +268,7 @@ function execForm (instance, data, action, actionOption, dataId) {
               alertMessage: 'Data Successfully Submitted',
               okCallback: () => {
                 if (action.redirect) {
-                  instance.$router.push({ path: action.redirect })
+                  changeRoute(instance, action.redirect, {item: data})
                 } else if (action.goback) {
                   instance.$router.go(-1)
                 }
@@ -278,10 +293,10 @@ function execForm (instance, data, action, actionOption, dataId) {
     case 'put':
       api.put(url, payload,
         (response) => {
-          if (action.redirect) action.redirect = instance.$util.stringInject(action.redirect, response)
+          let data = response.data
           if (action.noAlert) {
             if (action.redirect) {
-              instance.$router.push({ path: action.redirect })
+              changeRoute(instance, action.redirect, {item: data})
             } else if (action.goback) {
               instance.$router.go(-1)
             }
@@ -297,7 +312,7 @@ function execForm (instance, data, action, actionOption, dataId) {
               alertMessage: 'Data Successfully Submitted',
               okCallback: () => {
                 if (action.redirect) {
-                  instance.$router.push({ path: action.redirect })
+                  changeRoute(instance, action.redirect, {item: data})
                 } else if (action.goback) {
                   instance.$router.go(-1)
                 }

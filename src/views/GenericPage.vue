@@ -116,6 +116,8 @@ export default {
   },
   created () {
     this.fetchData()
+    // load page Route
+    this.$store.dispatch('loadPageRoute', {instance: this})
   },
   methods: {
     fetchData () {

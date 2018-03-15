@@ -1,10 +1,13 @@
 import * as types from '../mutation-types'
+import api from '../../api/common'
 
 // initial state
 const state = {
   editMode: false,
+  route: '',
   title: '',
   pageLang: '',
+  pageRoutes: [],
   alertTitle: '',
   alertMessage: '',
   path: [],
@@ -22,6 +25,22 @@ const getters = {
 
 // actions
 const actions = {
+  loadPageRoute (context, {instance}) {
+    if (instance) instance.$bus.$emit('show-full-loading', { key: 'fetchPageRoute' })
+    api.get('generic/urlRoute',
+      (response) => {
+        if (instance) instance.$bus.$emit('hide-full-loading', { key: 'fetchPageRoute' })
+        if (response.data) {
+          let pageRoutes = response.data
+          return context.commit(types.LOAD_PAGE_ROUTE, { pageRoutes })
+        }
+      },
+      () => {
+        console.log('error loading page route')
+        if (instance) instance.$bus.$emit('hide-full-loading', { key: 'fetchPageRoute' })
+      }
+    )
+  }
 }
 
 // mutations
@@ -71,6 +90,9 @@ const mutations = {
       state.path = []
     }
     state.selectLocationCallback = selectLocationCallback
+  },
+  [types.LOAD_PAGE_ROUTE] (state, {pageRoutes}) {
+    state.pageRoutes = pageRoutes
   }
 }
 
