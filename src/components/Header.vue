@@ -30,25 +30,25 @@
           <i :class="[editMode?'fa fa-window-restore':'fa fa-wrench']"></i>
         </a>
       </li> 
-      <li class="d-md-down-none nav-item">
-        <a href="javascript:void(0);" target="_self" aria-disabled="false" class="nav-link">
-          <i class="fa fa-bell"></i>
-        </a>
-      </li> 
+      <HeaderNotification/>
       <li class="d-md-down-none nav-item">
         <a href="javascript:void(0);" @click="logout()" aria-disabled="false" class="nav-link">
           <i class="fa fa-sign-out"></i>
         </a>
-      </li>   
+      </li>
     </ul>
   </header>
 </template>
 <script>
+import HeaderNotification from './HeaderNotification.vue'
 import { mapMutations, mapState } from 'vuex'
 import { ENABLE_EDIT_MODE, DISABLE_EDIT_MODE } from '../store/mutation-types'
 
 export default {
   name: 'header',
+  components: {
+    HeaderNotification
+  },
   computed: {
     currentFlag () {
       let flag = ''
