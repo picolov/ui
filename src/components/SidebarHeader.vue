@@ -1,6 +1,6 @@
 <template>
   <div class="sidebar-header">
-    <b-img-lazy id="img-avatar" :src="user ? (user.userProfile && user.userProfile.photo ? user.userProfile.photo : 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8Vw8AAmEBb87E6jIAAAAASUVORK5CYII=') : ''" rounded="circle" width="100px" height="100px" />
+    <b-img id="img-avatar" :src="imgSrc" rounded="circle" width="100px" height="100px" />
     <div style="padding-bottom: 0.5em;">
       <strong>{{user ? (user.userProfile ? user.userProfile.displayName : user.login) : ''}}</strong>
     </div>
@@ -8,12 +8,20 @@
   </div>
 </template>
 <script>
+import * as config from '../config'
 import { mapState, mapMutations } from 'vuex'
 import { SWITCH_MODE } from '../store/mutation-types'
 
 export default {
   name: 'sidebar-header',
   computed: {
+    imgSrc () {
+      let imgSrc = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8Vw8AAmEBb87E6jIAAAAASUVORK5CYII='
+      if (this.user && this.user.userProfile && this.user.userProfile.photo) {
+        imgSrc = config.BASE_URL + config.FILE_VIEW_PATH + this.user.userProfile.photo.id + '.' + this.user.userProfile.photo.extension
+      }
+      return imgSrc
+    },
     ...mapState({ mode: state => state.user.mode }),
     ...mapState({ user: state => state.user.user })
   },

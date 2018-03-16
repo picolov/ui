@@ -70,7 +70,7 @@ export default {
     titleText () {
       let value = null
       if (this.attr.headerTitle && !this.attr.headerModel) {
-        let result = this.$util.stringInject(this.attr.headerTitle, {data: this.$store.state.generic.data[this.dataId], props: this.$props})
+        let result = this.$util.stringInject(this.attr.headerTitle, {data: this.$store.state.generic.data[this.dataId], props: this.$props}, this.dataId)
         value = this.$t(result)
       } else if (!this.attr.headerTitle && this.attr.headerModel) {
         value = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.headerModel + this.arraySequence + (this.attr.key ? '.' + this.attr.key : ''), '')

@@ -144,7 +144,7 @@ export default {
               let mapInject = {item: null, urlParam: this.$route.query, index: null, component: null, action: action}
               switch (action.type) {
                 case 'getData':
-                  let url = this.$util.stringInject(action.url, mapInject)
+                  let url = this.$util.stringInject(action.url, mapInject, this.dataId)
                   if (action.method && action.method === 'post') {
                     api.post(url, {},
                       (response) => {

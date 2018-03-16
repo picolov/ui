@@ -47,7 +47,7 @@ function processAction (instance, action, component, item, index, urlParam, data
         chainPromise.then((result) => {
           // To do: Action Callback after all process running
           instance.$bus.$emit('hide-full-loading', { key: 'processAction' })
-          console.log('all function done', result)
+          // console.log('all function done', result)
           Promise.resolve(result)
         }).catch((error) => {
           instance.$bus.$emit('hide-full-loading', { key: 'processAction' })
@@ -89,7 +89,7 @@ function changeRoute (instance, route, routeOption) {
 }
 
 function processFunction (instance, data, action, actionOption, dataId) {
-  let url = stringInject(action.url, {...actionOption, action: action})
+  let url = stringInject(action.url, {...actionOption, action: action}, dataId)
   var deferred = new Deferred()
   switch (action.type) {
     case 'refreshTable':
@@ -218,7 +218,7 @@ function generateFunctionSequences (action) {
 }
 
 function execForm (instance, data, action, actionOption, dataId) {
-  let url = stringInject(action.url, actionOption)
+  let url = stringInject(action.url, actionOption, dataId)
   var deferredRequest = new Deferred()
   let payload = {}
   if (action.data) {
@@ -427,26 +427,24 @@ function stringInject (str, data, dataId) {
       }
     })
   } else if (typeof str === 'string' && (data instanceof Object)) {
-    for (let key in data) {
-      return str.replace(/({([^}]+)})/g, function (i) {
-        let params = i.replace(/{/, '').replace(/}/, '')
-        let paramArray = params.split(';')
-        if (paramArray.length === 1) {
-          return getObjectFromString(data, paramArray[0])
-        } else if (paramArray.length === 2) {
-          let statement = paramArray[1]
-          let value = getObjectFromString(data, paramArray[0])
-          if (typeof value === 'string' || value instanceof String) {
-            statement = replaceAll('#', '"' + value + '"', statement)
-          } else {
-            statement = replaceAll('#', value, statement)
-          }
-          return evaluateString(statement, null, null, null, dataId)
+    return str.replace(/({([^}]+)})/g, function (i) {
+      let params = i.replace(/{/, '').replace(/}/, '')
+      let paramArray = params.split(';')
+      if (paramArray.length === 1) {
+        return getObjectFromString(data, paramArray[0])
+      } else if (paramArray.length === 2) {
+        let statement = paramArray[1]
+        let value = getObjectFromString(data, paramArray[0])
+        if (typeof value === 'string' || value instanceof String) {
+          statement = replaceAll('#', '"' + value + '"', statement)
         } else {
-          return i
+          statement = replaceAll('#', value, statement)
         }
-      })
-    }
+        return evaluateString(statement, null, null, null, dataId)
+      } else {
+        return i
+      }
+    })
   } else {
     return false
   }

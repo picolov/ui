@@ -65,7 +65,13 @@ export default {
         return this.attr.imageSrc
       } else if (this.attr.imageKey) {
         let imgSrc = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], this.attr.model + this.arraySequence + '.' + this.attr.imageKey, 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mN8Vw8AAmEBb87E6jIAAAAASUVORK5CYII=')
-        if (!imgSrc.startsWith('data:') && !imgSrc.startsWith('http')) {
+        if (imgSrc !== null && typeof imgSrc === 'object') {
+          if (imgSrc.id && imgSrc.extension) {
+            imgSrc = config.BASE_URL + config.FILE_VIEW_PATH + imgSrc.id + '.' + imgSrc.extension
+          } else {
+            imgSrc = imgSrc.data
+          }
+        } else if (!imgSrc.startsWith('data:') && !imgSrc.startsWith('http')) {
           imgSrc = config.BASE_URL + imgSrc
         }
         return imgSrc

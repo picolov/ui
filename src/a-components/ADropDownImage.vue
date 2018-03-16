@@ -79,7 +79,7 @@ export default {
       if (this.attr.source) {
         if (this.attr.source.model && !this.attr.source.url) this.attr.source.url = 'generic/class/' + this.attr.source.model
         if (this.attr.source.method && this.attr.source.method === 'post') {
-          api.post(this.$util.stringInject(this.attr.source.url, {data: this.$store.state.generic.data[this.dataId], props: this.$props}), {},
+          api.post(this.$util.stringInject(this.attr.source.url, {data: this.$store.state.generic.data[this.dataId], props: this.$props}, this.dataId), {},
             (response) => {
               this.optionList = response.data
             },
@@ -88,7 +88,7 @@ export default {
             }
           )
         } else {
-          api.get(this.$util.stringInject(this.attr.source.url, {data: this.$store.state.generic.data[this.dataId], props: this.$props}),
+          api.get(this.$util.stringInject(this.attr.source.url, {data: this.$store.state.generic.data[this.dataId], props: this.$props}, this.dataId),
             (response) => {
               this.optionList = response.data
             },

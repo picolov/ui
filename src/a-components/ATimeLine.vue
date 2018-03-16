@@ -38,7 +38,7 @@ export default {
     labelText (pathUnit) {
       let value = ''
       if (pathUnit.text && !pathUnit.model) {
-        let result = this.$util.stringInject(pathUnit.text, {data: this.$store.state.generic.data[this.dataId], props: this.$props})
+        let result = this.$util.stringInject(pathUnit.text, {data: this.$store.state.generic.data[this.dataId], props: this.$props}, this.dataId)
         value = this.$t(result)
       } else if (!pathUnit.text && pathUnit.model) {
         value = this.$util.getObjectOrDefault(this.$store.state.generic.data[this.dataId], pathUnit.model + this.arraySequence + (pathUnit.key ? '.' + pathUnit.key : ''), '')
