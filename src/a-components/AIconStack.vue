@@ -2,7 +2,7 @@
   <span class="fa-stack">
       <i :class="[attr.icon, 'fa-stack-2x']"></i>
       <strong class="fa-stack-1x">
-          {{$util.stringInject(attr.text, {data: this.$store.state.generic.data[this.dataId], props: $props}) | translate}}   
+          {{$util.stringInject(attr.text, {data: this.$store.state.generic.data[this.dataId], props: $props}, this.dataId) | translate}}   
       </strong>
   </span>
 </template>

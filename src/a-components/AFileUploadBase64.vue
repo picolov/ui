@@ -106,7 +106,7 @@ export default {
 
         if (dataURI) {
           _this.$emit('load', dataURI)
-          _this.data = dataURI
+          _this.data = {fileName: file.name, size: file.size, extension: file.type, data: dataURI}
           _this.preview = dataURI
         }
       }

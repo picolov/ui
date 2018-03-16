@@ -1,6 +1,7 @@
 <template>
   <div :style="attr.style">
     <component v-for="(component, idx) in attr.content" 
+      v-if="component.ifCondition ? evaluateStatement(component.ifCondition, attr, component, idx) : true"
       :key="idx" 
       :is="component.type" 
       :attr="component"
@@ -47,6 +48,9 @@ export default {
     })
   },
   methods: {
+    evaluateStatement (statement, component, item, index) {
+      return this.$util.evaluateString.bind(this)(statement, component, item, index, this.dataId)
+    }
   }
 }
 </script>
