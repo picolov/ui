@@ -32,14 +32,17 @@ export default {
   name: 'header-notification',
   data: () => {
     return {
-      allNotifList: []
+      allNotifList: [],
+      notifTimer: null,
+      fetchLoading: false
     }
   },
   mounted () {
     this.getUnreadNotification()
-    setInterval(() => {
-      this.getUnreadNotification()
-    }, 10000)
+    this.startTimer()
+  },
+  beforeDestroy () {
+    clearInterval(this.notifTimer)
   },
   computed: {
     notifLIst () {
@@ -74,14 +77,33 @@ export default {
     gotoNotifList () {
       this.$util.processAction(this, { type: 'goto', route: 'notifChat-list' }, null, null, null, this.$route.query, '')
     },
+    startTimer () {
+      this.notifTimer = setInterval(() => {
+        this.getUnreadNotification()
+      }, 10000)
+    },
+    stopTimer () {
+      window.clearInterval(this.notifTimer)
+    },
     getUnreadNotification () {
-      return api.get(
-        '/generic/class/notification',
-        (response) => {
-          this.allNotifList = response.data
-        }, (error) => {
-          console.log(error)
-        })
+      if (this.fetchLoading) return
+      this.fetchLoading = true
+      new Promise((resolve, reject) => {
+        return api.get(
+          '/generic/class/notification',
+          (response) => {
+            this.allNotifList = response.data
+            resolve()
+          }, (error) => {
+            console.log(error)
+            reject(error)
+          })
+      }).then(() => {
+        this.fetchLoading = false
+      }).catch((error) => {
+        console.log(error)
+        this.fetchLoading = false
+      })
     }
   }
 }

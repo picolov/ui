@@ -74,6 +74,7 @@ function simulateASync (e) {
 */
 
 function changeRoute (instance, route, routeOption) {
+  route = stringInject(route, {...routeOption})
   let pageRoutes = instance.$store.state.app.pageRoutes
   let nextRoute = null
   if (pageRoutes && pageRoutes.length > 0) {
@@ -82,7 +83,7 @@ function changeRoute (instance, route, routeOption) {
     })
   }
   if (nextRoute) {
-    instance.$router.push({ path: instance.$util.stringInject(nextRoute.url, {...routeOption}) })
+    instance.$router.push({ path: stringInject(nextRoute.url, {...routeOption}) })
   } else {
     console.log('route not found')
   }
@@ -229,6 +230,8 @@ function execForm (instance, data, action, actionOption, dataId) {
       }
       payload[sentKey] = data[action.data[i]]
     }
+  } else if (action.dataFrom) {
+    payload = getObjectOrDefault({ data, ...actionOption }, action.dataFrom, null)
   } else {
     payload = data
   }

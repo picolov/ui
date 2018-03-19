@@ -14,6 +14,9 @@
       <template v-for="field in fields" :slot="field.key" v-if="field.key != 'actions'" slot-scope="data">
         {{data.value}}
       </template>
+      <template slot="icon" slot-scope="row">
+        <i :class="['fa fa-' + row.value]"></i>
+      </template>
       <template slot="HEAD_actions" v-if="attr.actions != undefined" slot-scope="data">
         <h6 class="text-center">{{data.label | translate}}</h6>
       </template>
@@ -150,6 +153,7 @@ export default {
               (response) => {
                 let dataMap = response.data
                 this.totalRows = dataMap.totalRows
+                if (this.attr.rowVariant && Array.isArray(this.attr.rowVariant)) this.alterVariant(dataMap)
                 callback(dataMap.list)
               },
               () => {
@@ -163,6 +167,7 @@ export default {
               (response) => {
                 let dataMap = response.data
                 this.totalRows = dataMap.totalRows
+                if (this.attr.rowVariant && Array.isArray(this.attr.rowVariant)) this.alterVariant(dataMap)
                 callback(dataMap.list)
               },
               () => {
@@ -187,6 +192,17 @@ export default {
     filterInput (key, value) {
       this.$store.commit(UPDATE_COMPONENT, {id: this.attr.id, attr: 'filter', key: key, value: value})
       this.$refs[this.attr.id].refresh()
+    },
+    alterVariant (mapData) {
+      for (let i = 0; i < mapData.list.length; i++) {
+        let row = mapData.list[i]
+        for (let j = 0; j < this.attr.rowVariant.length; j++) {
+          let rowVariant = this.attr.rowVariant[j]
+          if (this.checkCondition(rowVariant.condition, row, i)) {
+            row._rowVariant = rowVariant.variant
+          }
+        }
+      }
     },
     checkCondition (ifCondition, item, index) {
       return this.$util.evaluateString.bind(this)(ifCondition, this.attr, item, index, this.dataId)
