@@ -128,5 +128,38 @@ export default {
   isCancel (error) {
     // cancel the request (the message parameter is optional)
     return axios.isCancel(error)
+  },
+
+  download (url, param, config, cb, errorCb) {
+    let CancelToken = axios.CancelToken
+    let source = CancelToken.source()
+    if (config == null) config = {}
+    config.responseType = 'blob'
+    let request = HTTP.post(url, {
+      cancelToken: source.token,
+      ...param
+    }, config).then((response) => {
+      cb(response)
+      let filename = 'file.pdf'
+      if ('content-disposition' in response.headers) {
+        filename = response.headers['content-disposition']
+        let pos = filename.indexOf('filename=')
+        filename = filename.substring(pos + 9)
+      }
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', filename)
+      document.body.appendChild(link)
+      link.click()
+    }).catch((err) => {
+      if (axios.isCancel(err)) {
+        console.log('Request canceled', err.message)
+      } else {
+        console.log('error: ', err.message)
+        errorCb(err.response)
+      }
+    })
+    return { request, source }
   }
 }

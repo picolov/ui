@@ -93,6 +93,30 @@ function processFunction (instance, data, action, actionOption, dataId) {
   let url = stringInject(action.url, {...actionOption, action: action}, dataId)
   var deferred = new Deferred()
   switch (action.type) {
+    case 'download':
+      let payload = {}
+      if (action.data) {
+        for (let i = 0; i < action.data.length; i++) {
+          let sentKey = action.data[i]
+          if (action.unprefix) {
+            sentKey = replaceAll(action.unprefix + '_', '', sentKey)
+          }
+          payload[sentKey] = data[action.data[i]]
+        }
+      } else if (action.dataFrom) {
+        payload = getObjectOrDefault({ data, ...actionOption }, action.dataFrom, null)
+      } else {
+        payload = data
+      }
+      api.download(url, payload, {},
+        (response) => {
+          deferred.resolve(response)
+        },
+        (error) => {
+          deferred.reject(error)
+        }
+      )
+      break
     case 'refreshTable':
       instance.$store.commit(REFRESH_COMPONENT, {id: action.componentId})
       if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }

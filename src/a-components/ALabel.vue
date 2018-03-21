@@ -57,9 +57,9 @@ export default {
           value = result
         } else {
           if (this.attr.format === 'date') {
-            value = this.$util.datetimeToString(value, this.attr.dateFormat)
+            if (value) value = this.$util.datetimeToString(value, this.attr.dateFormat)
           } else if (this.attr.format === 'currency') {
-            value = this.$util.moneyFormat(value, 'Rp', 0, '.', ',')
+            if (value) value = this.$util.moneyFormat(value, 'Rp', 0, '.', ',')
           }
         }
       }
