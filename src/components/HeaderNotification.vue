@@ -87,10 +87,12 @@ export default {
     },
     getUnreadNotification () {
       if (this.fetchLoading) return
+      let userBusiness = 'none'
+      if (this.$store.state.user && this.$store.state.user.user) userBusiness = this.$store.state.user.user.userProfile.businessId
       this.fetchLoading = true
       new Promise((resolve, reject) => {
         return api.get(
-          '/generic/class/notification',
+          '/generic/class/notification?criteria=target;is;' + userBusiness,
           (response) => {
             this.allNotifList = response.data
             resolve()

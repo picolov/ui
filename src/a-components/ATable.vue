@@ -1,6 +1,7 @@
 <template>
   <div>
-    <b-table :ref="attr.id"
+    <b-table class="a-table"
+      :ref="attr.id"
       head-variant="dark"
       :items="myProvider" 
       :fields="fields" 
@@ -11,8 +12,13 @@
         <h6 class="text-center" :key="field.key">{{data.label | translate}}</h6>
         <input v-if="field.filter" type="text" @click.stop=";" :value="filterValue(field.key)" @input="filterInput(field.key, $event)" :key="field.key" style="width: 100%;"/>
       </template>
-      <template v-for="field in fields" :slot="field.key" v-if="field.key != 'actions'" slot-scope="data">
-        {{data.value}}
+      <template v-for="(field, idx) in fields" :slot="field.key" v-if="field.key != 'actions'" slot-scope="data">
+        <b-img v-if="field.type == 'image'" 
+          :rounded="field.shape==='circle'?'circle':'0'" 
+          fluid
+          :width="field.imgWidth" 
+          :height="field.imgHeight" :src="imgSrc(field, data.value)" v-bind:key="idx"/>
+        <div v-else v-bind:key="idx">{{data.value}}</div>
       </template>
       <template slot="icon" slot-scope="row">
         <i :class="['fa fa-' + row.value]"></i>
@@ -41,6 +47,7 @@
 import { UPDATE_DATA, UPDATE_COMPONENT, FINISH_REFRESH_COMPONENT } from '../store/mutation-types'
 import moment from 'moment'
 import api from '../api/common'
+import * as config from '../config'
 // TODO for other component (ex. inputTextFilter) to modify the filter, the component will suplly method to be called with the filter as param
 export default {
   name: 'a-table',
@@ -102,7 +109,7 @@ export default {
         let filterCrit = ''
         this.filter = this.$store.state.generic.component[this.attr.id]['filter']
         if (this.attr.criteria) {
-          let processedCrit = this.$util.stringInject(this.attr.criteria, this.$store.state.generic.data[this.dataId], this.dataId)
+          let processedCrit = this.$util.stringInject(this.attr.criteria, {...this.$store.state.generic.data[this.dataId], _user: this.$store.state.user}, this.dataId)
           if (processedCrit) {
             let tokenListCrit = processedCrit.split(',')
             for (let i = 0; i < tokenListCrit.length; i++) {
@@ -163,7 +170,7 @@ export default {
             )
           } else if (this.attr.method === 'post') {
             api.post(
-              this.attr.url + params, {},
+              urlToken[0] + params, {},
               (response) => {
                 let dataMap = response.data
                 this.totalRows = dataMap.totalRows
@@ -206,6 +213,10 @@ export default {
     },
     checkCondition (ifCondition, item, index) {
       return this.$util.evaluateString.bind(this)(ifCondition, this.attr, item, index, this.dataId)
+    },
+    imgSrc (field, value) {
+      let imgSrc = config.BASE_URL + config.FILE_VIEW_PATH + value.id + '.' + value.extension
+      return imgSrc
     }
   },
   mounted () {
@@ -216,7 +227,7 @@ export default {
     this.totalRows = 0
     this.options = {}
     if (this.attr.criteria) {
-      let processedCrit = this.$util.stringInject(this.attr.criteria, this.data, this.dataId)
+      let processedCrit = this.$util.stringInject(this.attr.criteria, {...this.data, _user: this.$store.state.user}, this.dataId)
       if (processedCrit) {
         let tokenListCrit = processedCrit.split(',')
         for (let i = 0; i < tokenListCrit.length; i++) {
@@ -224,7 +235,8 @@ export default {
           let critKey = tokenCrit[0]
           let critOps = tokenCrit[1]
           let critVal = tokenCrit[2]
-          this.filter[critKey] = critOps + ':' + critVal
+          // this.filter[critKey] = critOps + ':' + critVal
+          this.$store.commit(UPDATE_COMPONENT, {id: this.attr.id, attr: 'filter', key: critKey, value: critOps + ':' + critVal})
         }
       } else {
       }
@@ -257,6 +269,10 @@ export default {
           return this.$util.getObjectFromString(item, key)
         }
       }
+      // alignment
+      if (field.align) {
+        field.tdClass = 'td-' + field.align
+      }
       this.fields.splice(this.fields.length, 1, field)
     }
     this.fields.splice(this.fields.length, 1, { key: 'actions', label: 'Actions' })
@@ -265,5 +281,17 @@ export default {
 </script>
 
 <style lang="scss">
+.a-table td {
+  vertical-align: middle;
+}
+.td-center {
+  text-align: center;
+}
+.td-left {
+  text-align: start;
+}
+.td-right {
+  text-align: end;
+}
 </style>
 
