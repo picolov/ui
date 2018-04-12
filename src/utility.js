@@ -74,7 +74,7 @@ function simulateASync (e) {
 */
 
 function changeRoute (instance, route, routeOption) {
-  route = stringInject(route, {...routeOption})
+  route = stringInject(route, {...routeOption, _user: instance.$store.state.user})
   let pageRoutes = instance.$store.state.app.pageRoutes
   let nextRoute = null
   if (pageRoutes && pageRoutes.length > 0) {
@@ -83,14 +83,14 @@ function changeRoute (instance, route, routeOption) {
     })
   }
   if (nextRoute) {
-    instance.$router.push({ path: stringInject(nextRoute.url, {...routeOption}) })
+    instance.$router.push({ path: stringInject(nextRoute.url, {...routeOption, _user: instance.$store.state.user}) })
   } else {
     console.log('route not found')
   }
 }
 
 function processFunction (instance, data, action, actionOption, dataId) {
-  let url = stringInject(action.url, {...actionOption, action: action}, dataId)
+  let url = stringInject(action.url, {...actionOption, action: action, _user: instance.$store.state.user}, dataId)
   var deferred = new Deferred()
   switch (action.type) {
     case 'download':
@@ -132,6 +132,7 @@ function processFunction (instance, data, action, actionOption, dataId) {
       deferred.resolve()
       break
     case 'getData':
+      console.log(url)
       if (action.method && action.method === 'post') {
         api.post(url, {},
           (response) => {
@@ -243,7 +244,7 @@ function generateFunctionSequences (action) {
 }
 
 function execForm (instance, data, action, actionOption, dataId) {
-  let url = stringInject(action.url, actionOption, dataId)
+  let url = stringInject(action.url, {...actionOption, _user: instance.$store.state.user}, dataId)
   var deferredRequest = new Deferred()
   let payload = {}
   if (action.data) {
@@ -286,6 +287,9 @@ function execForm (instance, data, action, actionOption, dataId) {
             if (actionOption.component.type === 'a-table') {
               instance.$store.commit(REFRESH_COMPONENT, {id: actionOption.component.id})
             }
+            if (action.refreshId) {
+              instance.$store.commit(REFRESH_COMPONENT, {id: action.refreshId})
+            }
             if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
           } else {
             if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
@@ -301,6 +305,10 @@ function execForm (instance, data, action, actionOption, dataId) {
                 }
                 if (actionOption.component.type === 'a-table') {
                   instance.$store.commit(REFRESH_COMPONENT, {id: actionOption.component.id})
+                }
+                console.log('refresshhh this ---------------' + action.refreshId)
+                if (action.refreshId) {
+                  instance.$store.commit(REFRESH_COMPONENT, {id: action.refreshId})
                 }
               }
             })
@@ -330,6 +338,9 @@ function execForm (instance, data, action, actionOption, dataId) {
             if (actionOption.component.type === 'a-table') {
               instance.$store.commit(REFRESH_COMPONENT, {id: actionOption.component.id})
             }
+            if (action.refreshId) {
+              instance.$store.commit(REFRESH_COMPONENT, {id: action.refreshId})
+            }
             if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
           } else {
             if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
@@ -345,6 +356,9 @@ function execForm (instance, data, action, actionOption, dataId) {
                 }
                 if (actionOption.component.type === 'a-table') {
                   instance.$store.commit(REFRESH_COMPONENT, {id: actionOption.component.id})
+                }
+                if (action.refreshId) {
+                  instance.$store.commit(REFRESH_COMPONENT, {id: action.refreshId})
                 }
               }
             })
@@ -365,6 +379,9 @@ function execForm (instance, data, action, actionOption, dataId) {
           if (actionOption.component.type === 'a-table') {
             instance.$store.commit(REFRESH_COMPONENT, {id: actionOption.component.id})
           }
+          if (action.refreshId) {
+            instance.$store.commit(REFRESH_COMPONENT, {id: action.refreshId})
+          }
           if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
           deferredRequest.resolve(response)
         },
@@ -381,6 +398,9 @@ function execForm (instance, data, action, actionOption, dataId) {
           (response) => {
             if (actionOption.component.type === 'a-table') {
               instance.$store.commit(REFRESH_COMPONENT, {id: actionOption.component.id})
+            }
+            if (action.refreshId) {
+              instance.$store.commit(REFRESH_COMPONENT, {id: action.refreshId})
             }
             if (action.showLoading) { instance.$bus.$emit('hide-full-loading', { key: 'fetchLayout' }) }
             deferredRequest.resolve(response)
@@ -402,6 +422,9 @@ function execForm (instance, data, action, actionOption, dataId) {
               (response) => {
                 if (actionOption.component.type === 'a-table') {
                   instance.$store.commit(REFRESH_COMPONENT, {id: actionOption.component.id})
+                }
+                if (action.refreshId) {
+                  instance.$store.commit(REFRESH_COMPONENT, {id: action.refreshId})
                 }
                 deferredRequest.resolve(response)
               },

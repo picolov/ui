@@ -110,6 +110,7 @@ export default {
         this.filter = this.$store.state.generic.component[this.attr.id]['filter']
         if (this.attr.criteria) {
           let processedCrit = this.$util.stringInject(this.attr.criteria, {...this.$store.state.generic.data[this.dataId], _user: this.$store.state.user}, this.dataId)
+          console.log('provider criteria:' + processedCrit)
           if (processedCrit) {
             let tokenListCrit = processedCrit.split(',')
             for (let i = 0; i < tokenListCrit.length; i++) {
@@ -227,7 +228,8 @@ export default {
     this.totalRows = 0
     this.options = {}
     if (this.attr.criteria) {
-      let processedCrit = this.$util.stringInject(this.attr.criteria, {...this.data, _user: this.$store.state.user}, this.dataId)
+      let user = this.$store.state.user
+      let processedCrit = this.$util.stringInject(this.attr.criteria, {...this.data, _user: user}, this.dataId)
       if (processedCrit) {
         let tokenListCrit = processedCrit.split(',')
         for (let i = 0; i < tokenListCrit.length; i++) {

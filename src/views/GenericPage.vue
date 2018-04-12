@@ -141,7 +141,7 @@ export default {
           if (page.init && page.init.length > 0) {
             for (let i = 0; i < page.init.length; i++) {
               let action = page.init[i]
-              let mapInject = {item: null, urlParam: this.$route.query, index: null, component: null, action: action}
+              let mapInject = {item: null, urlParam: this.$route.query, index: null, component: null, action: action, _user: this.$store.state.user}
               switch (action.type) {
                 case 'getData':
                   let url = this.$util.stringInject(action.url, mapInject, this.dataId)

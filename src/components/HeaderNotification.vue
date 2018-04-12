@@ -92,7 +92,7 @@ export default {
       this.fetchLoading = true
       new Promise((resolve, reject) => {
         return api.get(
-          '/generic/class/notification?criteria=target;is;' + userBusiness,
+          '/generic/class/notification?criteria=isRead;is;false,target;is;' + userBusiness,
           (response) => {
             this.allNotifList = response.data
             resolve()
