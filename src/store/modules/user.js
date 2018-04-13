@@ -17,9 +17,27 @@ const getters = {
   menus: state => state.menus,
   authMenus: state => state.authMenus,
   filteredMenus: state => {
-    return state.menus.filter((menu) => {
-      return state.authMenus ? state.authMenus[state.mode].includes(menu.id) : false
-    })
+    let filtered = []
+    for (let i = 0; i < state.menus.length; i++) {
+      let menu = state.menus[i]
+      if (state.authMenus[state.mode].includes(menu.id)) {
+        let newMenu = {...menu}
+        if (menu.children) {
+          let childrenNew = []
+          for (let j = 0; j < menu.children.length; j++) {
+            let childrenMenu = menu.children[j]
+            if (state.authMenus[state.mode].includes(childrenMenu.id)) {
+              childrenNew.push(childrenMenu)
+            }
+          }
+          if (childrenNew.length > 0) {
+            newMenu.children = childrenNew
+          }
+        }
+        filtered.push(newMenu)
+      }
+    }
+    return filtered
   }
 }
 

@@ -78,9 +78,10 @@ export default {
       this.$util.processAction(this, { type: 'goto', route: 'notifChat-list' }, null, null, null, this.$route.query, '')
     },
     startTimer () {
+      this.getUnreadNotification()
       this.notifTimer = setInterval(() => {
         this.getUnreadNotification()
-      }, 10000)
+      }, 5000)
     },
     stopTimer () {
       window.clearInterval(this.notifTimer)
