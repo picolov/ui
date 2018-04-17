@@ -25,6 +25,10 @@ export default {
     activeWhenUrl: {
       type: String,
       default: '~'
+    },
+    menuId: {
+      type: String,
+      default: '~'
     }
   },
   methods: {

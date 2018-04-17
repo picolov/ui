@@ -49,7 +49,7 @@
 <script>
 import {_} from 'vue-underscore'
 import { mapState, mapMutations } from 'vuex'
-import { SET_ALERT_SHOW, SET_MAPPICKER_SHOW, SET_PAGE, UPDATE_DATA_COLLECTION, CLEAR_DATA, REFRESH_COMPONENT } from '../store/mutation-types'
+import { SET_ALERT_SHOW, SET_MAPPICKER_SHOW, SET_PAGE, SET_MODE, UPDATE_DATA_COLLECTION, CLEAR_DATA, REFRESH_COMPONENT } from '../store/mutation-types'
 import api from '../api/common'
 
 export default {
@@ -128,6 +128,22 @@ export default {
       api.get(
         'generic/flow/layout/' + this.$route.params.page,
         (response) => {
+          // check if the url is on vendor or client, switch mode if necessary
+          if (this.$store.state.user && this.$store.state.user.user && this.$store.state.user.user.menus) {
+            let menus = this.$store.state.user.user.menus
+            let activeMenu = ''
+            for (let i = 0; i < menus.length; i++) {
+              if (this.$route.path.indexOf(menus[i].activeWhenUrl.trim()) > -1) {
+                activeMenu = menus[i].id
+              }
+            }
+            let authMenus = this.$store.state.user.user.authMenus
+            Object.keys(authMenus).forEach((roleName) => {
+              if (authMenus[roleName].indexOf(activeMenu) > -1) {
+                this.$store.commit(SET_MODE, {mode: roleName})
+              }
+            })
+          }
           this.$bus.$emit('hide-full-loading', { key: 'fetchLayout' })
           let page = response.data
           if (page.lang) {
@@ -174,6 +190,14 @@ export default {
                   }
                   break
                 case 'initData':
+                  let instance = this
+                  Object.keys(action.keyVal).forEach(function (key) {
+                    let value = action.keyVal[key]
+                    if (typeof value === 'string') {
+                      value = instance.$util.stringInject(value, {_user: instance.$store.state.user})
+                      action.keyVal[key] = value
+                    }
+                  })
                   this.$store.commit(UPDATE_DATA_COLLECTION, {id: this.dataId, collection: action.keyVal})
                   this.attr = page.container
                   break

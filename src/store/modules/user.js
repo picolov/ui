@@ -145,6 +145,9 @@ const mutations = {
         }
       }
     }
+  },
+  [types.SET_MODE] (state, {mode}) {
+    state.mode = mode
   }
 }
 

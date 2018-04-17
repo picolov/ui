@@ -132,7 +132,6 @@ function processFunction (instance, data, action, actionOption, dataId) {
       deferred.resolve()
       break
     case 'getData':
-      console.log(url)
       if (action.method && action.method === 'post') {
         api.post(url, {},
           (response) => {
@@ -306,7 +305,6 @@ function execForm (instance, data, action, actionOption, dataId) {
                 if (actionOption.component.type === 'a-table') {
                   instance.$store.commit(REFRESH_COMPONENT, {id: actionOption.component.id})
                 }
-                console.log('refresshhh this ---------------' + action.refreshId)
                 if (action.refreshId) {
                   instance.$store.commit(REFRESH_COMPONENT, {id: action.refreshId})
                 }

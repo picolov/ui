@@ -40,6 +40,10 @@
       activeWhenUrl: {
         type: String,
         default: '~'
+      },
+      menuId: {
+        type: String,
+        default: '~'
       }
     },
     computed: {
